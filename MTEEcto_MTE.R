@@ -120,8 +120,6 @@ for (current_paper in unique_papers){
 }
 colnames(pop.results)=c("Papercode", "slope", "pvalue")
 
-#######pulling out data for species-level variability
-unique_species=unique(rep_linker_sort$)
 ################ANALYSES#######################
 average_Qdiff=mean(Q_sp$Q4TSRQ4_diff)
 median_Qdiff=median(Q_sp$Q4TSRQ4_diff)
