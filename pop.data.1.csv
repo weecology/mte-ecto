@@ -1,0 +1,48 @@
+Papercode,Study,Q_nochange,Q_TSD,Study_copy,Species,Class,temperature
+1,KJF08A,1.398374291,1.378787387,KJF08A,Lycaena tityrus  ,Insecta,19.5
+1,KJF08B,1.398374291,1.377284473,KJF08B,Lycaena tityrus  ,Insecta,10
+2,L05A,1.413046766,1.098132281,L05A,Rana temporaria  ,Amphibia,16.31
+2,L05B,1.413046766,1.096093559,L05B,Rana temporaria  ,Amphibia,15.38
+2,L05C,1.413046766,1.051027145,L05C,Rana temporaria  ,Amphibia,15.85
+2,L05D,1.413046766,1.116396585,L05D,Rana temporaria  ,Amphibia,11.85
+2,L05E,1.413046766,1.111372978,L05E,Rana temporaria  ,Amphibia,12.85
+2,L05F,1.413046766,1.142057028,L05F,Rana temporaria  ,Amphibia,10.65
+3,LL85A,1.406473222,1.375602178,LL85A,Scottolana canadensis  ,Maxillopoda,25.5
+3,LL85B,1.406473222,1.388316015,LL85B,Scottolana canadensis  ,Maxillopoda,22
+3,LL85C,1.406473222,1.395162447,LL85C,Scottolana canadensis  ,Maxillopoda,14
+4,LM87A,1.407367116,1.323503157,LM87A,Acyrthosiphon pisum ,Insecta,25.7
+4,LM87B,1.407367116,1.210133779,LM87B,Acyrthosiphon pisum ,Insecta,22.2
+4,LM87C,1.407367116,1.252503518,LM87C,Acyrthosiphon pisum ,Insecta,21.5
+4,LM87D,1.407367116,1.257364408,LM87D,Acyrthosiphon pisum ,Insecta,19.6
+4,LM87E,1.407367116,1.250577254,LM87E,Acyrthosiphon pisum ,Insecta,17.4
+5,MC05A,1.400449829,1.334472712,MC05A,Echinocladius martini,Insecta,18.5
+5,MC05B,1.41102969,1.295053408,MC05B,Echinocladius martini,Insecta,10
+5,MC05C,1.41102969,1.311414076,MC05C,Australopelopia prionoptera,Insecta,18.5
+5,MC05D,1.41102969,1.346288572,MC05D,Australopelopia prionoptera,Insecta,10
+6,P01A,1.401107694,1.34036306,P01A,Drosophila melanogaster  ,Insecta,14
+6,P01B,1.401107694,1.356255843,P01B,Drosophila melanogaster  ,Insecta,19.8
+6,P01C,1.404751564,1.316887719,P01C,Drosophila simulans  ,Insecta,14
+6,P01D,1.404751564,1.333113213,P01D,Drosophila simulans  ,Insecta,19.8
+7,S07A,1.383181502,1.29215559,S07A,Callosobruchus maculatus  ,Insecta,27.45
+7,S07B,1.383181502,1.262056339,S07B,Callosobruchus maculatus  ,Insecta,29.85
+8,SF02A,1.406716665,1.298715349,SF02A,Thrips tabaci,Insecta,17.65
+8,SF02B,1.406716665,1.340692417,SF02B,Thrips tabaci,Insecta,15.6
+8,SF02C,1.406716665,1.356338285,SF02C,Thrips tabaci,Insecta,16.6
+9,SF02D,1.406716665,1.391457726,SF02D,Thrips major,Insecta,17.65
+9,SF02E,1.406716665,1.264795286,SF02E,Thrips major,Insecta,16.6
+9,SF02F,1.406716665,1.311311064,SF02F,Thrips major,Insecta,15.6
+10,SF02G,1.406716665,1.226592867,SF02G,Frankliniella occidentalis,Insecta,17.65
+10,SF02H,1.406716665,1.361992948,SF02H,Frankliniella occidentalis,Insecta,15.6
+11,SF05A,1.375735672,1.341337742,SF05A,Stator limbatus  ,Insecta,20.9
+11,SF05B,1.375735672,1.313375094,SF05B,Stator limbatus  ,Insecta,16.7
+12,SVE96A,1.414750877,1.346540799,SVE96A,Folsomia candida  ,Entognatha,15.6
+12,SVE96B,1.414750877,1.228576619,SVE96B,Folsomia candida  ,Entognatha,19.1
+13,TM61A,1.399242076,1.266394292,TM61A,Drosophila melanogaster  ,Insecta,16.15
+13,TM61B,1.399242076,1.255418311,TM61B,Drosophila melanogaster  ,Insecta,21.55
+13,TM61D,1.399242076,1.295905388,TM61D,Drosophila melanogaster  ,Insecta,27.34
+13,TM61F,1.403127704,1.265977161,TM61F,Drosophila simulans  ,Insecta,16.15
+13,TM61I,1.403127704,1.278004149,TM61I,Drosophila simulans  ,Insecta,21.55
+13,TM61J,1.403127704,1.291782551,TM61J,Drosophila simulans  ,Insecta,27.34
+14,WV98A,1.412966978,1.327154884,WV98A,Daphnia pulex  ,Branchiopoda,23
+14,WV98B,1.412966978,1.788756139,WV98B,Daphnia pulex  ,Branchiopoda,16
+14,WV98C,1.412966978,1.877807678,WV98C,Daphnia pulex  ,Branchiopoda,17
