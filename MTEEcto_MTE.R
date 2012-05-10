@@ -1,7 +1,5 @@
 #File for calculating Q4s for each species and for generating population-level comparisons
 
-setwd("C:/Users/Morgan/Dropbox/Morgane/MTEEcto")
-
 data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE)
 #stringsAsFactors prevents R from reading strings as factors, which mucks up further analysis
 
