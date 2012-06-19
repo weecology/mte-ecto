@@ -7,6 +7,7 @@ data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE)
 replicate=unique(data$replicate)
 rep_linker=c()
 
+
 #extracting species and replicate info
 for (current_replicate in replicate){
   replicate_data = subset(data, data$replicate == current_replicate)
@@ -17,7 +18,8 @@ for (current_replicate in replicate){
 rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
 write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
 
-#Creating RAW datafile
+#START:Creating RAW datafile (Q4 FOR EACH REPLCIATE)
+  #creating Q4 for each temperature comparison within a replicate
 MTE_allreps=c()
 MTE_allcompare=c()
 
@@ -54,9 +56,9 @@ Q_diff=100*((Q_nochange/Q_change)-1)
 Q_file=c()
 Q_file=cbind(warming, Q_nochange, Q_change, Q_diff)
 write.table(Q_file, file = "Q_file.csv", sep = ",", col.names = TRUE)
-#END RAW DATAFILE CREATION
+  # finished creating Q4 for each temperature comparison within a replicate
 
-#Average Q for each study
+  #Average Q for each study
 rep_avgs=c()
 for (unique_rep in replicate){
   rep_subset= subset (Q_file, Q_file$rep_vector == unique_rep) 
@@ -71,9 +73,9 @@ for (unique_rep in replicate){
  rep_avgs_2= transform(rep_avgs_1, V2 = as.numeric(V2), V3 = as.numeric(V3))
 write.table(rep_avgs_2, file = "rep_avgs_2.csv", sep = ",", col.names = TRUE)
 
-#END STUDY AVERAGES
+  #completed study averages
 
-#Average Q for species
+  #Average Q for species
 Q_1=c()
 species=unique(rep_avgs_2$V5)
 for (current_sp in species){
@@ -92,7 +94,23 @@ Q_diff_alt=100*((Q_sp$V4/Q_sp$V3)-1)
 Q_sp=cbind(Q_sp, Q_diff_alt)
 colnames(Q_sp)=c("Species", "Class", "Q4", "Q4TSR", "Q4Q4TSR_diff", "Q4TSRQ4_diff")
 write.table(Q_sp, file = "Q_sp.csv", sep = ",", col.names = TRUE)
-# END AVGERAGE Q FOR SPECIES
+  #finished creating average Q for each species
+# END creating species-level q4 data for project
+
+#START: averaging mass for each species for Q4 vs. mass analysis
+current_sp=c()
+sp_subset=c()
+sp.mass=c()
+for (current_sp in species){
+  sp_subset=subset (data, data$Species == current_sp)
+  avg.mass=mean(sp_subset$mass)
+  currentsp.mass=cbind(current_sp, avg.mass)
+  sp.mass=rbind(sp.mass, currentsp.mass)
+}
+
+Q_sp=cbind(Q_sp, sp.mass)
+Q_sp=subset(Q_sp, select=-c(current_sp))
+#END: adding mass data for each species for Q4 vs. mass analysis
 
 #Pulling out population-level data for latitudinal assessment
 pop.study = read.csv("Population_data.csv", stringsAsFactors = FALSE)
