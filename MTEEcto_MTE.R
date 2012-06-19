@@ -97,7 +97,8 @@ write.table(Q_sp, file = "Q_sp.csv", sep = ",", col.names = TRUE)
   #finished creating average Q for each species
 # END creating species-level q4 data for project
 
-#START: averaging mass for each species for Q4 vs. mass analysis
+#START: Q4 vs. mass analysis
+  #adding mass data to Q_sp table
 current_sp=c()
 sp_subset=c()
 sp.mass=c()
@@ -110,7 +111,17 @@ for (current_sp in species){
 
 Q_sp=cbind(Q_sp, sp.mass)
 Q_sp=subset(Q_sp, select=-c(current_sp))
-#END: adding mass data for each species for Q4 vs. mass analysis
+Q_sp= transform(Q_sp, avg.mass = as.character(avg.mass))
+Q_sp= transform(Q_sp, avg.mass = as.numeric(avg.mass))
+  #completed adding mass data for each species for Q4 vs. mass analysis
+
+  #analysis of mass vs. Qdiff
+plot(log10(Q_sp$avg.mass), Q_sp$Q4TSRQ4_diff)
+Qdiff_mass_regress=lm(Q_sp$Q4TSRQ4_diff ~ log10(Q_sp$avg.mass))
+Qdiff_mass.summary=summary(Qdiff_mass_regress)
+Qdiff_mass.results=cbind(Qdiff_mass.summary$coefficients[2,1], Qdiff_mass.summary$r.squared, Qdiff_mass.summary$coefficients[2,4])
+colnames(Qdiff_mass.results)=c("slope", "rsquared", "slope_pvalue")
+#END: Q4 vs. mass analysis
 
 #Pulling out population-level data for latitudinal assessment
 pop.study = read.csv("Population_data.csv", stringsAsFactors = FALSE)
