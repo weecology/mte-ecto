@@ -1,10 +1,12 @@
-#File for calculating Q4s for each species and for generating population-level comparisons
+#File for calculating Q4s for each species and for generating species and population-level comparisons
+#This is the main file for the MTE Ecto project
 
 data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE)
 #stringsAsFactors prevents R from reading strings as factors, which mucks up further analysis
 
 replicate=unique(data$replicate)
 rep_linker=c()
+
 #extracting species and replicate info
 for (current_replicate in replicate){
   replicate_data = subset(data, data$replicate == current_replicate)
@@ -92,7 +94,7 @@ colnames(Q_sp)=c("Species", "Class", "Q4", "Q4TSR", "Q4Q4TSR_diff", "Q4TSRQ4_dif
 write.table(Q_sp, file = "Q_sp.csv", sep = ",", col.names = TRUE)
 # END AVGERAGE Q FOR SPECIES
 
-#Pulling out population-level data
+#Pulling out population-level data for latitudinal assessment
 pop.study = read.csv("Population_data.csv", stringsAsFactors = FALSE)
 pop.list=unique(pop.study$Study)
 pop.data=subset(rep_avgs_2, rep_avgs_2$V4 %in% pop.list)
@@ -102,7 +104,7 @@ pop.data=pop.data[order(pop.data$Study),]
 pop.study=pop.study[order(pop.study$Study),]
 pop.data=cbind(pop.data, pop.study$temperature)
 
-#export pop.data table to add unique paper column
+#export pop.data table to add manually a column that identifies which rows come from the same paper and are thus comparable
 write.table(pop.data, file = "pop.data.csv", sep = ",", col.names = TRUE)
 
 #import modified pop.data file
@@ -118,6 +120,8 @@ for (current_paper in unique_papers){
 }
 colnames(pop.results)=c("Papercode", "slope", "pvalue")
 
+#END LATITUDINAL ANALYSES
+
 ################ANALYSES#######################
 average_Qdiff=mean(Q_sp$Q4TSRQ4_diff)
 median_Qdiff=median(Q_sp$Q4TSRQ4_diff)
@@ -126,9 +130,9 @@ minmax=range(Q_sp$Q4TSRQ4_diff)
 ############PLOTS#####################
 jpeg("C:/Documents and Settings/skme/My Dropbox/Morgane/MTEEcto/TSD_percentdiff.jpeg")
 plot(density(Q_sp$Q4TSRQ4_diff),  col="red",main=" ",
-xlab="Percent difference between TSD and non_TSD Q4s",)
-title(main="How much would metabolic response to temperature be overestimated", line=3)
-title(main="by ignoring TSD?", line=2)
+xlab="Percent difference between Q4s with and without and without size response",)
+#title(main="Fig 3. Impact of the size-temperature relationship on the", line=3)
+#title(main=" response of metabolism to temperature across taxa", line=2)
 dev.off()
 
 jpeg("C:/Documents and Settings/skme/My Dropbox/Morgane/MTEEcto/TSD_MTE_density.jpeg")
@@ -137,7 +141,7 @@ yes_range=range(Q_sp$Q4TSR)
 plot(density(Q_sp$Q4), xlim = yes_range, main="", col="red",  
     xlab="x-fold increase in metabolic rate")
 lines(density(Q_sp$Q4TSR))
-legend("topleft", inset=.05, title="line colors",c("no TSD", "TSD"), fill=c("red", "black"))
+legend("topleft", inset=.05,c("Q4 size response", "Q4 no change"), fill=c("black", "red"))
 dev.off()
 
 Actinoperygii=subset(Q_sp, Q_sp$Class == "Actinoperygii")
