@@ -20,19 +20,30 @@ def convert_grams_to_kilograms(grams):
     return Mass_kg
 
 def extract_analysis_data(temperature_celsius, mass_grams):
+    """converts to celsius and gram data to 1/Kelvin and kilograms and returns 
+    formatted data"""
     InvK = calculate_InvK(temperature_celsius)
     Mass_kg = convert_grams_to_kilograms(mass_grams)
     LogMass_kg = np.log(Mass_kg)
     return InvK, LogMass_kg, Mass_kg
 
 def get_metabolic_params(InvK, LogMass, Metabolic_rate):
+    """conducts multiple regression to get fitted mass exponent (exponent) 
+    and activation energy (Ea)"""
     analysis_data = pd.DataFrame(zip(InvK, LogMass_kg, Metabolic_rate),
                                  columns=['InvK', 'LogMass_kg', 'Metabolic_rate'])
-    results = sm.OLS.from_formula("Metabolic_rate ~ LogMass_kg + InvK", analysis_data).fit()
+    results = sm.OLS.from_formula("Metabolic_rate ~ LogMass_kg + InvK", 
+                                  analysis_data).fit()
     Intercept, exponent, temp_slope = results.params
     Ea = abs(temp_slope) * 0.000086
-    return exponent, Ea, temp_slope
+    return exponent, Ea
  
+def make_class_parameters_list(param_list, current_class, exponent, Ea):
+    """adds analysis parameters to list along with the Class designation"""
+    class_params = [current_class, exponent, Ea]
+    param_list.append(class_params)
+    return param_list
+
 metabolic_rate_filename = "Class_metabolicrates_Makrievadata.csv"
 
 MR_data = pd.read_csv(metabolic_rate_filename)
@@ -45,15 +56,19 @@ for current_class in Class_list:
                                                              class_data['Mg '])
     Metabolic_rate = np.log(class_data['qWkg'] * Mass_kg)
     exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
-    class_params = [current_class, exponent, Ea]
-    metabolic_params.append(class_params)
+    metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                  current_class, exponent, Ea)
 
 metabolic_rate_amphibians = "Whiteetal_Amphibiandata.csv"
 
 amphi_data = pd.read_csv(metabolic_rate_amphibians)
 InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], amphi_data['Mg'])
 Metabolic_rate = np.log(amphi_data['Watts'])
-exponent, Ea, temp_slope = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
+exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
+metabolic_params = make_class_parameters_list(metabolic_params, 'Amphibians', 
+                                              exponent, Ea)
+
+
 
 
 
