@@ -1,3 +1,4 @@
+#MTE_params.py
 """Main code for calculating MTE slope and Ea and Q4 values for the 
 MTE Ecto Project using raw data on size-temperature relationships and 
 metabolic rate, body size/temperature"""
@@ -44,46 +45,52 @@ def make_class_parameters_list(param_list, current_class, exponent, Ea):
     param_list.append(class_params)
     return param_list
 
-"""Main Body"""
-metabolic_rate_filename = "Class_metabolicrates_Makrievadata.csv"
+def get_class_MTE_params():
+    """main body of code that processes data files and returns the exponent and
+    EA for the metabolic rate equation for each taxonomic Class"""
+    metabolic_rate_filename = "Class_metabolicrates_Makrievadata.csv"
 
-MR_data = pd.read_csv(metabolic_rate_filename)
-Class_list = set(MR_data['Class'])
-metabolic_params = []
+    MR_data = pd.read_csv(metabolic_rate_filename)
+    Class_list = set(MR_data['Class'])
+    metabolic_params = []
 
-for current_class in Class_list:
-    class_data = MR_data.ix[MR_data['Class'] == current_class]
-    InvK, LogMass_kg, Mass_kg = extract_analysis_data(class_data['TC '], 
-                                                             class_data['Mg '])
-    Metabolic_rate = np.log(class_data['qWkg'] * Mass_kg)
-    exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
-    metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                  current_class, exponent, Ea)
+    for current_class in Class_list:
+        class_data = MR_data.ix[MR_data['Class'] == current_class]
+        InvK, LogMass_kg, Mass_kg = extract_analysis_data(class_data['TC '], 
+                                                          class_data['Mg '])
+        Metabolic_rate = np.log(class_data['qWkg'] * Mass_kg)
+        exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
+        metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                      current_class, exponent, Ea)
 
-metabolic_rate_amphibians = "Whiteetal_Amphibiandata.csv"
+        metabolic_rate_amphibians = "Whiteetal_Amphibiandata.csv"
 
-amphi_data = pd.read_csv(metabolic_rate_amphibians)
-InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], amphi_data['Mg'])
-Metabolic_rate = np.log(amphi_data['Watts'])
-exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
-metabolic_params = make_class_parameters_list(metabolic_params, 'Amphibians', 
-                                              exponent, Ea)
+        amphi_data = pd.read_csv(metabolic_rate_amphibians)
+        InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], 
+                                                          amphi_data['Mg'])
+        Metabolic_rate = np.log(amphi_data['Watts'])
+        exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
+        metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                      'Amphibians', exponent, Ea)
 
-metabolic_rate_fish = "gillooly_fish.csv"
-fish_data = pd.read_csv(metabolic_rate_fish)
-LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
-exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
-                                    np.log(fish_data['W']))
-metabolic_params = make_class_parameters_list(metabolic_params, 'Actinoperygii', 
-                                              exponent, Ea)
+        metabolic_rate_fish = "gillooly_fish.csv"
+        fish_data = pd.read_csv(metabolic_rate_fish)
+        LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
+        exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
+                                            np.log(fish_data['W']))
+        metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                      'Actinoperygii',exponent,
+                                                      Ea)
 
-metabolic_params = make_class_parameters_list(metabolic_params, 'Insecta', 0.75,
-                                              0.62)
+        metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                      'Insecta', 0.75, 0.62)
 
-other_classes = ['Gastropoda','Eurotatoria', 'Entognatha']
-for current_class in other_classes:
-    metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                  current_class, 0.75, 0.63)    
+        other_classes = ['Gastropoda','Eurotatoria', 'Entognatha']
+        for current_class in other_classes:
+            metabolic_params = make_class_parameters_list(metabolic_params,
+                                                          current_class, 0.75, 
+                                                          0.63)
+        return metabolic_params
     
 
                     
