@@ -1,7 +1,6 @@
 #MTE_params.py
-"""Main code for calculating MTE slope and Ea and Q4 values for the 
-MTE Ecto Project using raw data on size-temperature relationships and 
-metabolic rate, body size/temperature"""
+"""Library of functions for calculating MTE slope and Ea for the 
+MTE Ecto Project using raw data on metabolic rate, body size and temperature"""
 
 from __future__ import division
 
@@ -28,7 +27,7 @@ def extract_analysis_data(temperature_celsius, mass_grams):
     LogMass_kg = np.log(Mass_kg)
     return InvK, LogMass_kg, Mass_kg
 
-def get_metabolic_params(InvK, LogMass, Metabolic_rate):
+def get_metabolic_params(InvK, LogMass_kg, Metabolic_rate):
     """conducts multiple regression to get fitted mass exponent (exponent) 
     and activation energy (Ea)"""
     analysis_data = pd.DataFrame(zip(InvK, LogMass_kg, Metabolic_rate),
@@ -45,17 +44,17 @@ def make_class_parameters_list(param_list, current_class, exponent, Ea):
     param_list.append(class_params)
     return param_list
 
-def get_class_MTE_params():
+def get_class_MTE_params(Makreiva, Fish, Amphibians):
     """main body of code that processes data files and returns the exponent and
     EA for the metabolic rate equation for each taxonomic Class"""
     metabolic_rate_filename = "Class_metabolicrates_Makrievadata.csv"
 
-    MR_data = pd.read_csv(metabolic_rate_filename)
-    Class_list = set(MR_data['Class'])
+    Makreiva_data = pd.read_csv(Makreiva)
+    Class_list = set(Makreiva_data['Class'])
     metabolic_params = []
 
     for current_class in Class_list:
-        class_data = MR_data.ix[MR_data['Class'] == current_class]
+        class_data = Makreiva_data.ix[Makreiva_data['Class'] == current_class]
         InvK, LogMass_kg, Mass_kg = extract_analysis_data(class_data['TC '], 
                                                           class_data['Mg '])
         Metabolic_rate = np.log(class_data['qWkg'] * Mass_kg)
@@ -63,9 +62,7 @@ def get_class_MTE_params():
         metabolic_params = make_class_parameters_list(metabolic_params, 
                                                       current_class, exponent, Ea)
 
-        metabolic_rate_amphibians = "Whiteetal_Amphibiandata.csv"
-
-        amphi_data = pd.read_csv(metabolic_rate_amphibians)
+        amphi_data = pd.read_csv(Amphibians)
         InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], 
                                                           amphi_data['Mg'])
         Metabolic_rate = np.log(amphi_data['Watts'])
@@ -73,8 +70,7 @@ def get_class_MTE_params():
         metabolic_params = make_class_parameters_list(metabolic_params, 
                                                       'Amphibians', exponent, Ea)
 
-        metabolic_rate_fish = "gillooly_fish.csv"
-        fish_data = pd.read_csv(metabolic_rate_fish)
+        fish_data = pd.read_csv(Fish)
         LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
         exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
                                             np.log(fish_data['W']))
