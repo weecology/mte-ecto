@@ -44,6 +44,7 @@ def make_class_parameters_list(param_list, current_class, exponent, Ea):
     param_list.append(class_params)
     return param_list
 
+"""Main Body"""
 metabolic_rate_filename = "Class_metabolicrates_Makrievadata.csv"
 
 MR_data = pd.read_csv(metabolic_rate_filename)
@@ -67,6 +68,27 @@ Metabolic_rate = np.log(amphi_data['Watts'])
 exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
 metabolic_params = make_class_parameters_list(metabolic_params, 'Amphibians', 
                                               exponent, Ea)
+
+metabolic_rate_fish = "gillooly_fish.csv"
+fish_data = pd.read_csv(metabolic_rate_fish)
+LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
+exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
+                                    np.log(fish_data['W']))
+metabolic_params = make_class_parameters_list(metabolic_params, 'Actinoperygii', 
+                                              exponent, Ea)
+
+metabolic_params = make_class_parameters_list(metabolic_params, 'Insecta', 0.75,
+                                              0.62)
+
+other_classes = ['Gastropoda','Eurotatoria', 'Entognatha']
+for current_class in other_classes:
+    metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                  current_class, 0.75, 0.63)    
+    
+
+                    
+
+
 
 
 
