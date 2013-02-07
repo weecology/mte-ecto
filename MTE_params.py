@@ -39,9 +39,10 @@ def get_metabolic_params(InvK, LogMass_kg, Metabolic_rate):
     return exponent, Ea
  
 def make_class_parameters_list(param_list, current_class, exponent, Ea):
-    """adds analysis parameters to list along with the Class designation"""
+    """adds analysis parameters to Pandas dataframe along with the Class 
+    designation"""
     class_params = [current_class, exponent, Ea]
-    param_list.append(class_params)
+    param_list.append(class_params)    
     return param_list
 
 def get_class_MTE_params(Makreiva, Fish, Amphibians):
@@ -86,7 +87,9 @@ def get_class_MTE_params(Makreiva, Fish, Amphibians):
             metabolic_params = make_class_parameters_list(metabolic_params,
                                                           current_class, 0.75, 
                                                           0.63)
-        return metabolic_params
+        param_DF = pd.DataFrame(metabolic_params, columns=["Class", "Exponent", 
+                                                           "Ea"])
+        return param_DF
     
 
                     
