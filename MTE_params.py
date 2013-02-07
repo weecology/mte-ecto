@@ -69,7 +69,7 @@ def get_class_MTE_params(Makreiva, Fish, Amphibians):
     Metabolic_rate = np.log(amphi_data['Watts'])
     exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
     metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                  'Amphibians', exponent, Ea)
+                                                  'Amphibia', exponent, Ea)
 
     fish_data = pd.read_csv(Fish)
     LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
