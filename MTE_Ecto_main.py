@@ -13,8 +13,11 @@ def create_species_replicateID_linker(data):
         replicate_species = list(set(replicate_data['Species']))
         replicate_class = list(set(replicate_data['Class']))
         replicate_info = [replicate, replicate_species, replicate_class]
-        replicate_species_linker.append(replicate_info)  
-    return replicate_species_linker
+        replicate_species_linker.append(replicate_info)
+        replicate_species_link = pd.DataFrame(replicate_species_linker, 
+                                              columns=["replicateID", "species",
+                                                       "class"])
+    return replicate_species_link
 
 """Main Code"""
 metabolic_params = MTE_params.get_class_MTE_params("Class_metabolicrates_Makrievadata.csv", 
@@ -22,7 +25,8 @@ metabolic_params = MTE_params.get_class_MTE_params("Class_metabolicrates_Makriev
                                                    "Whiteetal_Amphibiandata.csv")
 
 SizeTemp_data = pd.read_csv("MTEEcto_data.csv")
-replicate_species_list = create_species_replicateID_linker(SizeTemp_data)
+replicate_species_DF = create_species_replicateID_linker(SizeTemp_data)
+unique_replicates = set(replicate_species_DF['replicateID'])
 
 
     
