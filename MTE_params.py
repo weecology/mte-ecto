@@ -60,36 +60,34 @@ def get_class_MTE_params(Makreiva, Fish, Amphibians):
                                                           class_data['Mg '])
         Metabolic_rate = np.log(class_data['qWkg'] * Mass_kg)
         exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
-        metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                      current_class, exponent, Ea)
-
-        amphi_data = pd.read_csv(Amphibians)
-        InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], 
+        class_params = make_class_parameters_list(metabolic_params,
+                                                  current_class, exponent, Ea)
+       
+    amphi_data = pd.read_csv(Amphibians)
+    InvK, LogMass_kg, Mass_kg = extract_analysis_data(amphi_data['TC'], 
                                                           amphi_data['Mg'])
-        Metabolic_rate = np.log(amphi_data['Watts'])
-        exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
-        metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                      'Amphibians', exponent, Ea)
+    Metabolic_rate = np.log(amphi_data['Watts'])
+    exponent, Ea = get_metabolic_params(InvK, LogMass_kg, Metabolic_rate)
+    metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                  'Amphibians', exponent, Ea)
 
-        fish_data = pd.read_csv(Fish)
-        LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
-        exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
+    fish_data = pd.read_csv(Fish)
+    LogMass_kg = np.log(convert_grams_to_kilograms(fish_data['Mg']))
+    exponent, Ea = get_metabolic_params(fish_data['invK'], LogMass_kg, 
                                             np.log(fish_data['W']))
-        metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                      'Actinoperygii',exponent,
-                                                      Ea)
+    metabolic_params = make_class_parameters_list(metabolic_params, 
+                                                  'Actinoperygii',exponent, Ea)
 
-        metabolic_params = make_class_parameters_list(metabolic_params, 
-                                                      'Insecta', 0.75, 0.62)
+    metabolic_params = make_class_parameters_list(metabolic_params, 'Insecta', 
+                                                  0.75, 0.62)
 
-        other_classes = ['Gastropoda','Eurotatoria', 'Entognatha']
-        for current_class in other_classes:
-            metabolic_params = make_class_parameters_list(metabolic_params,
+    other_classes = ['Gastropoda','Eurotatoria', 'Entognatha']
+    for current_class in other_classes:
+        metabolic_params = make_class_parameters_list(metabolic_params,
                                                           current_class, 0.75, 
                                                           0.63)
-        param_DF = pd.DataFrame(metabolic_params, columns=["Class", "Exponent", 
-                                                           "Ea"])
-        return param_DF
+    param_DF = pd.DataFrame(metabolic_params, columns=["Class", "Exponent", "Ea"])
+    return param_DF
     
 
                     
