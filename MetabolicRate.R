@@ -1,6 +1,10 @@
 
-
 #--------------CALCULATING EXPONENTS AND ACTIVATION ENERGY FOR METABOLIC EQUATIONS-------------------------------
+
+### For the metabolic rate equation Metabolic Rate = constant * (Mass ^exponent) * e ^ Activation Energy/kt
+### This section uses metabolic rate, temperature, and size data to calculated fitted exponent and activation
+### energy for the taxonomic classes for which we could find data. 
+
 ##-----------------------------ANALYSES WITH MAKRIEVA DATA FOR Branchiopoda Malacostraca and Maxillopoda---------------
 MR_data = read.csv("Class_metabolicrates_Makrievadata.csv", stringsAsFactors = FALSE)
 Class_list=unique(MR_data$Class)
@@ -105,7 +109,6 @@ class_uniquereplicate=unique(rep_linker_sort[,1])
 ### metabolic rates for the following cases: 1) no size change as temperature increases, 2) size and temperature increase
 ### as observed in the data. 
 
-#Creating RAW datafile !
 MTE_allreps=c()
 MTE_allcompare=c()
 Classes_all=unique(TSD_data$Class)
@@ -140,9 +143,11 @@ temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
 MTE_allreps=cbind(MTE_allreps, temp_diff)
 warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
 
-##---------------------CALCULATING Q4 FOR THE TEMPERATURE-METABOLIC RATE DATA GENERATED------------------
+##-----------------CALCULATING AVG REPLICATE Q4 FOR THE GENERATED TEMPERATURE-METABOLIC RATE DATA------------------
+
 ### Using the temperature-metabolic rate data generated above and stored in the dataframe 'warming'
-### 
+### to calculate an average Q4 value for each replicate
+
 Q_nochange=(warming$MTE_nochange/warming$MTE_initial)^(4/warming$temp_diff)
 Q_change=(warming$MTE_change/warming$MTE_initial)^(4/warming$temp_diff) 
 Q_diff=100*((Q_change/Q_nochange)-1)
@@ -165,9 +170,13 @@ for (unique_rep in class_uniquereplicate){
  rep_avgs_1=  as.data.frame(rep_avgs, stringsAsFactors = FALSE)
  rep_avgs_2= transform(rep_avgs_1, V2 = as.numeric(V2), V3 = as.numeric(V3))
 write.table(rep_avgs_2, file = "class_rep_avgs_2.csv", sep = ",", col.names = TRUE)
-#END STUDY AVERAGES
 
-#Average Q for species
+
+##---------------------------AVERAGE Q4 FOR EACH SPECIES-------------------------------------------
+
+### If more than one replicate for a species, calculates an average across the replciates so that
+### each species only has one resulting datapoint
+
 Q_1=c()
 species=unique(rep_avgs_2$V5)
 for (current_sp in species){
@@ -191,8 +200,8 @@ names(ClassQ_sp)[names(ClassQ_sp) == "V3"] = "Q4_noTSR"
 names(ClassQ_sp)[names(ClassQ_sp) == "V4"] = "Q4_TSR"
 ClassQ_sp= transform(ClassQ_sp, Q_diff = as.numeric(Q_diff))
 write.table(ClassQ_sp, file = "ClassQ_sp.csv", sep = ",", col.names = TRUE)
-# END AVERAGE Q FOR SPECIES
 
+#-------------------------SUMMARY STATS AND GRAPHS -------------------------
 mean_Q4noTSR=mean(ClassQ_sp$Q4_noTSR)
 mean_Q4TSR=mean(ClassQ_sp$Q4_TSR)
 t.test(ClassQ_sp$Q4_noTSR,ClassQ_sp$Q4_TSR, paired=TRUE )
