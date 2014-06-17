@@ -100,7 +100,11 @@ class_uniquereplicate=unique(rep_linker_sort[,1])
 
 ##---------------------------CALCULATING METABOLIC RATES FOR TEMPERATURE/SIZE COMBOS FROM DATA----------------------
 
-### 
+### This section pulls out the size-temperature data and metabolic rate parameters for a specific taxonomic class
+### It extracts the data from a unique replicate. FOr that replicate it uses the size-temperature data to calculates 
+### metabolic rates for the following cases: 1) no size change as temperature increases, 2) size and temperature increase
+### as observed in the data. 
+
 #Creating RAW datafile !
 MTE_allreps=c()
 MTE_allcompare=c()
@@ -119,9 +123,9 @@ for (index_class in Classes_all){
         for (current_temp in temps){
           min_mass=current_data$mass[current_data$temp==current_temp]
           repeater=length(temps)
+          MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.000086*(current_temp+273.15)))))
           MTE_nochange=min_mass^(class_MTE$exponent)*exp(class_MTE$Ea/(.000086*(temps+273.15)))
           MTE_change=(current_data$mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.000086*(temps+273.15)))))
-          MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.000086*(current_temp+273.15)))))
           rep_vector=c(rep(index_replicate,repeater))
           Tmin_vector=c(rep(current_temp, repeater))
           MTE_repdata=cbind(temps,Tmin_vector, MTE_initial, MTE_nochange, MTE_change)
@@ -134,8 +138,11 @@ for (index_class in Classes_all){
 
 temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
 MTE_allreps=cbind(MTE_allreps, temp_diff)
-warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0)
+warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
 
+##---------------------CALCULATING Q4 FOR THE TEMPERATURE-METABOLIC RATE DATA GENERATED------------------
+### Using the temperature-metabolic rate data generated above and stored in the dataframe 'warming'
+### 
 Q_nochange=(warming$MTE_nochange/warming$MTE_initial)^(4/warming$temp_diff)
 Q_change=(warming$MTE_change/warming$MTE_initial)^(4/warming$temp_diff) 
 Q_diff=100*((Q_change/Q_nochange)-1)
