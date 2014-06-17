@@ -1,8 +1,10 @@
-#setwd("C:/Documents and Settings/skme/My Dropbox/Morgane/MTEEcto/Metabolicscaling/")
-setwd("C:/Users/Morgan/Dropbox/Morgane/MTEEcto/")
+
+
+#--------------CALCULATING EXPONENTS AND ACTIVATION ENERGY FOR METABOLIC EQUATIONS-------------------------------
+##-----------------------------ANALYSES WITH MAKRIEVA DATA FOR Branchiopoda Malacostraca and Maxillopoda---------------
 MR_data = read.csv("Class_metabolicrates_Makrievadata.csv", stringsAsFactors = FALSE)
 Class_list=unique(MR_data$Class)
-InvK=1/(273.15+MR_data$TC)
+InvK=1/(273.15+MR_data$TC) #getting all the units correct
 Mkg=MR_data$Mg/1000
 W=MR_data$qWkg*Mkg
 MR_data = cbind(MR_data, InvK, W)
@@ -18,8 +20,8 @@ for (current_class in Class_list){
   class_slopes=rbind(class_slopes, c(current_class, Mslope, Tslope, Ea))
 }
 
-#obtaining class-specific exponents for metabolic rate scaling for Amphibia
-MR_Amphi = read.csv("C:/Users/Morgan/Dropbox/Morgane/MTEEcto/Metabolicscaling/Whiteetal_Amphibiandata.csv", stringsAsFactors = FALSE)
+##-----------------------------ANALYSES WITH WHITE DATA FOR AMPHIBIANS--------------------------------------------
+MR_Amphi = read.csv("Whiteetal_Amphibiandata.csv", stringsAsFactors = FALSE)
 A_InvK=1/(273.15+MR_Amphi$TC)
 A_Mkg=MR_Amphi$Mg/1000
 MR_Amphi = cbind(MR_Amphi, A_InvK, A_Mkg)
@@ -30,8 +32,10 @@ Ea=Tslope*0.000086
 class_slopes=rbind(class_slopes, c("Amphibia", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
+##-----------------------------ANALYSES WITH GILLOOLY DATA FOR FISH-----------------------------------------------
+
 #obtaining super-class-specific exponents for metabolic rate scaling in fish
-MR_fish = read.csv("C:/Users/Morgan/Dropbox/Morgane/MTEEcto/gillooly_fish.csv", stringsAsFactors = FALSE)
+MR_fish = read.csv("gillooly_fish.csv", stringsAsFactors = FALSE)
 f_Mkg=MR_fish$Mg/1000
 MR_fish = cbind(MR_fish, f_Mkg)
 F_basic=lm(log(MR_fish$W) ~ log(MR_fish$f_Mkg) + MR_fish$invK)
@@ -41,13 +45,15 @@ Ea=Tslope*0.000086
 class_slopes=rbind(class_slopes, c("Actinoperygii", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
+##----------------CLEANING UP DATAFRAME WITH CLASS-SPECIFIC PARAMETERS FOR METABOLIC EQUATION------------------------
+
 #removing unneccesary column and renaming columns
 class_values=class_slopes[c(-3)]
 names(class_values)[names(class_values) == "V1"] = "Class"
 names(class_values)[names(class_values) == "log(Class_data$Mg)"] = "exponent"
 names(class_values)[names(class_values) == "Class_data$InvK"] = "Ea"
 
-#adding Insecta and theoretical values for other classes to class_values
+##---------------ADDING Insecta VALUES FROM CHOWN AND THEORY VALUES FOR REMAINING CLASSES------------------------------
 I_class="Insecta"
 other_class=c("Gastropoda","Eurotatoria", "Entognatha")
 I_slope=0.75
@@ -66,8 +72,17 @@ names(other_values)[names(other_values) == "I_Ea"] = "Ea"
 class_values=rbind(class_values, other_values)
 class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.numeric(Ea))
 
+#----------------------Q10 CALCULATIONS---------------------------------------
+
 TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE)
 #stringsAsFactors prevents R from reading strings as factors, which mucks up further analysis
+
+##-------------------EXTRACTING SPECIES AND REPLICATE INFO--------------------
+
+### Within a scientific paper, the body size-temperature study may have replicated
+### experiments or have slightly different experiments that were conducted. Each experiment
+### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". This 
+### section of code extracts information so that each replicate can be analyzed separately
 
 replicate=unique(TSD_data$replicate)
 rep_linker=c()
@@ -83,6 +98,9 @@ rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
 #write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
 class_uniquereplicate=unique(rep_linker_sort[,1])
 
+##---------------------------CALCULATING METABOLIC RATES FOR TEMPERATURE/SIZE COMBOS FROM DATA----------------------
+
+### 
 #Creating RAW datafile !
 MTE_allreps=c()
 MTE_allcompare=c()
