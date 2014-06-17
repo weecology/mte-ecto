@@ -29,7 +29,7 @@ def get_metabolic_rate(size, temp, class_parameters):
     extract_exponent = list(class_parameters['Exponent'])
     exponent = float(class_parameters['Exponent'])
     Ea = float(class_parameters['Ea'])
-    metabolic_rate = (size ** exponent) * math.exp(Ea/(0.00086*(temp + 273.15)))
+    metabolic_rate = float(math.pow(size,exponent) * math.exp((-Ea/(0.000086*(temp + 273.15)))))
     return metabolic_rate
 
 def get_Class_size_temp_data(index_class, data):
@@ -50,13 +50,15 @@ def get_SizeTemp_metabolism(data, parameters):
     output_df = pd.DataFrame(output, columns=["Metabolic", "Temperature", "Size"])
     return output_df
 
-def get_tempchange_metabolism(index_temp, data, parameters, all_temps):
-    initial_size = float(data['mass'][data['temp'] == index_temp])
-    Tchange_MRs = [(get_metabolic_rate(initial_size, temp, parameters),
-                    temp, initial_size) for temp in all_temps]
-    Initial_MR = get_metabolic_rate(initial_size, index_temp, parameters)
-    return Tchange_MRs, Initial_MR
-    
+def get_tempchange_metabolism(baseline_size, data, parameters):
+    all_temps = set(data['temp'])
+    Tchange_MRs = [(get_metabolic_rate(baseline_size, temp, parameters),
+                    temp, baseline_size) for temp in all_temps]
+    return Tchange_MRs
+
+#    baseline_size = float(data['mass'][data['temp'] == index_temp])
+#    Initial_MR = get_metabolic_rate(baseline_size, index_temp, parameters)
+#    return Initial_MR
 """Main Code"""
 metabolic_params = MTE_params.get_class_MTE_params("Class_metabolicrates_Makrievadata.csv", 
                                                    "gillooly_fish.csv", 
@@ -66,19 +68,30 @@ SizeTemp_data = pd.read_csv("MTEEcto_data.csv")
 study_species_DF = create_species_studyID_linker(SizeTemp_data)
 unique_studys = set(study_species_DF['studyID'])
 unique_classes = set(SizeTemp_data['Class'])
-
+Q_Tchange_results = []
 for index_class in unique_classes:
     class_studies, class_sizedata = get_Class_size_temp_data(index_class, SizeTemp_data)
     class_MTEparams = metabolic_params.ix[metabolic_params['Class'] == index_class] 
     for index_study in class_studies:
         study_sizedata = class_sizedata.ix[class_sizedata['studyID'] == index_study]
-        study_temps = set(study_sizedata['temp'])
-        SizeTemp_MR = get_SizeTemp_metabolism(study_sizedata, class_MTEparams)      
-        for current_temp in study_temps:
-            Tchange_MRs, Initial_MR = get_tempchange_metabolism(current_temp,
-                                                                study_sizedata, 
-                                                                class_MTEparams,
-                                                                study_temps)
+        study_sizes = set(study_sizedata['mass'])
+        SizeTemp_MR = get_SizeTemp_metabolism(study_sizedata, class_MTEparams)
+        for current_size in study_sizes:
+            Tchange_MRs = get_tempchange_metabolism(current_size,study_sizedata, 
+                                                    class_MTEparams)
+            for i in range(len(Tchange_MRs)):
+                for j in range(i+1, len(Tchange_MRs)):
+                    baseline_record = Tchange_MRs[i]
+                    comparative_record = Tchange_MRs[j]
+                    temp_change = comparative_record[1] - baseline_record[1] 
+                    if temp_change > 0:
+                        Q_Tchange = math.pow(comparative_record[0]/baseline_record[0],
+                                             4/temp_change)
+                        Q_Tchange_output= [index_study, temp_change, Q_Tchange]
+                        Q_Tchange_results.append(Q_Tchange_output)
+    
+                    
+                    
             
             
             
