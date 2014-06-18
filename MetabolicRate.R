@@ -89,12 +89,12 @@ TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding =
 ### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". This 
 ### section of code extracts information so that each replicate can be analyzed separately
 
-replicate=unique(TSD_data$replicate)
+replicate=unique(TSD_data$studyID)
 rep_linker=c()
 
 #extracting species and replicate info
 for (current_replicate in replicate){
-  replicate_data = subset(TSD_data, TSD_data$replicate == current_replicate)
+  replicate_data = subset(TSD_data, TSD_data$studyID == current_replicate)
   replicate_species= unique(replicate_data$Species)
   replicate_class=unique(replicate_data$Class)
   rep_linker=rbind(rep_linker, c(current_replicate, replicate_species, replicate_class))
