@@ -78,8 +78,9 @@ class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.
 
 #----------------------Q10 CALCULATIONS---------------------------------------
 
-TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE)
+TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 #stringsAsFactors prevents R from reading strings as factors, which mucks up further analysis
+#must re-encode data to properly read in data file
 
 ##-------------------EXTRACTING SPECIES AND REPLICATE INFO--------------------
 
