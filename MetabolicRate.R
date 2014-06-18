@@ -111,17 +111,18 @@ class_uniquereplicate=unique(rep_linker_sort[,1])
 ### as observed in the data. 
 
 MTE_allreps=c()
+#unused empty vector?
 MTE_allcompare=c()
 Classes_all=unique(TSD_data$Class)
 
 for (index_class in Classes_all){
   class_TSD= subset(TSD_data, TSD_data$Class == index_class)
   class_MTE= subset(class_values1, class_values1$Class == index_class)
-  class_replicate=unique(class_TSD$replicate)
+  class_replicate=unique(class_TSD$studyID)
     
     for (index_replicate in class_replicate){
       MTE_repdata=c()
-      current_data= subset (class_TSD, class_TSD$replicate == index_replicate)
+      current_data= subset (class_TSD, class_TSD$studyID == index_replicate)
       temps=unique(current_data$temp)
  
         for (current_temp in temps){
