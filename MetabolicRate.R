@@ -297,4 +297,13 @@ lines(N.data$x, N.data$N_TSR, type="o", lwd=2, col="gray")
 legend("topright", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.296"), fill=c("black", "gray"))
 
                       
+##-----------------CALCULATE COMPENSATION BODY MASS----------------------------------
+
+### Using metabolic rates for initial mass and temperature, which have already ("MTE_initial") 
+### been calculated to determine what mass each species would need to be to compensate for a
+### 3*C increase in temperature. 
+
+
+
+
 
