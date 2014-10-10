@@ -310,20 +310,24 @@ legend("topright", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.
 compensation_mass_calcs = unique(warming[,c("rep_vector", "Tmin_vector", "MTE_initial")])
 colnames(compensation_mass_calcs) = c("rep_vector", "initial_temp", "initial_MetRate")
 
-#add initial mass to dataframe
-#still not able to get mass from TSD_data that matches rep and temp in compensation dataframe
-#don't want highest temperature in each rep
-
-# testestest = TSD_data$mass[match(compensation_mass_calcs$rep_vector == TSD_data$studyID & compensation_mass_calcs$initial_temp == TSD_data$temp)]
+# #add initial mass to dataframe
+# #still not able to get mass from TSD_data that matches rep and temp in compensation dataframe
+# #don't want highest temperature in each rep
 # 
-# getting_mass = subset(TSD_data, compensation_mass_calcs$rep_vector == TSD_data$studyID & compensation_mass_calcs$initial_temp == TSD_data$temp)
+# getting_mass = c()
+# getting_mass = TSD_data[compensation_mass_calcs$rep_vector %in% TSD_data$studyID & compensation_mass_calcs$initial_temp %in% TSD_data$temp, "mass"]
+
+#add increased temperature to dataframe
+compensation_mass_calcs$comp_temp = compensation_mass_calcs$initial_temp + 3
+
+#calculate and add mass at compensation temperature w/ initial metabolic rate to dataframe
+
+#need to get class-specific exponents and activation energy from class_values1
+for row in compensation_mass_calcs{
+  class_subset = subset(TSD_data, compensation_mass_calcs$rep_vector == TSD_data$studyID)
+}
 
 
-getting_mass = TSD_data[(TSD_data$studyID %in% compensation_mass_calcs$rep_vector) & (TSD_data$temp %in% compensation_mass_calcs$initial_temp), "temp"]
-getting_mass3 = TSD_data[(compensation_mass_calcs$rep_vector %in% TSD_data$studyID) & (compensation_mass_calcs$initial_temp %in% TSD_data$temp), "temp"]
-
-getting_mass2 = subset(TSD_data, TSD_data$studyID == compensation_mass_calcs$rep_vector & TSD_data$temp == compensation_mass_calcs$initial_temp)
-getting_mass4 = subset(TSD_data, compensation_mass_calcs$rep_vector == TSD_data$studyID & compensation_mass_calcs$initial_temp == TSD_data$temp)
-
-
+classes_temporary = TSD_data[compensation_mass_calcs$rep_vector %in% TSD_data$studyID, "Class"]
+classes_temporary = TSD_data[compensation_mass_calcs$rep_vector == TSD_data$studyID, "Class"]
 
