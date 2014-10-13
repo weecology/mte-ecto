@@ -20,7 +20,7 @@ for (current_class in Class_list){
   basic=lm(log(Class_data$W) ~ log(Class_data$Mg) + Class_data$InvK)
   Mslope=basic$coefficients[2]
   Tslope=basic$coefficients[3]
-  Ea=Tslope*0.000086
+  Ea=Tslope*0.00008617
   class_slopes=rbind(class_slopes, c(current_class, Mslope, Tslope, Ea))
 }
 
@@ -32,7 +32,7 @@ MR_Amphi = cbind(MR_Amphi, A_InvK, A_Mkg)
 A_basic=lm(log(MR_Amphi$Watts) ~ log(MR_Amphi$A_Mkg) + MR_Amphi$A_InvK)
 Mslope=A_basic$coefficients[2]
 Tslope=A_basic$coefficients[3]
-Ea=Tslope*0.000086
+Ea=Tslope*0.00008617
 class_slopes=rbind(class_slopes, c("Amphibia", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
@@ -45,7 +45,7 @@ MR_fish = cbind(MR_fish, f_Mkg)
 F_basic=lm(log(MR_fish$W) ~ log(MR_fish$f_Mkg) + MR_fish$invK)
 Mslope=F_basic$coefficients[2]
 Tslope=F_basic$coefficients[3]
-Ea=Tslope*0.000086
+Ea=Tslope*0.00008617
 class_slopes=rbind(class_slopes, c("Actinoperygii", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
@@ -128,9 +128,9 @@ for (index_class in Classes_all){
         for (current_temp in temps){
           min_mass=current_data$mass[current_data$temp==current_temp]
           repeater=length(temps)
-          MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.000086*(current_temp+273.15)))))
-          MTE_nochange=min_mass^(class_MTE$exponent)*exp(class_MTE$Ea/(.000086*(temps+273.15)))
-          MTE_change=(current_data$mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.000086*(temps+273.15)))))
+          MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(current_temp+273.15)))))
+          MTE_nochange=min_mass^(class_MTE$exponent)*exp(class_MTE$Ea/(.00008617*(temps+273.15)))
+          MTE_change=(current_data$mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(temps+273.15)))))
           rep_vector=c(rep(index_replicate,repeater))
           Tmin_vector=c(rep(current_temp, repeater))
           MTE_repdata=cbind(temps,Tmin_vector, MTE_initial, MTE_nochange, MTE_change)
