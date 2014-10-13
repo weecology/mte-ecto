@@ -306,28 +306,26 @@ legend("topright", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.
 
 #create dataframe containing initial temp & mass rows for each replicate with calculated
 # metabolic rate from warming data frame
-
 compensation_mass_calcs = unique(warming[,c("rep_vector", "Tmin_vector", "MTE_initial")])
 colnames(compensation_mass_calcs) = c("rep_vector", "initial_temp", "initial_MetRate")
 
-# #add initial mass to dataframe
-# #still not able to get mass from TSD_data that matches rep and temp in compensation dataframe
-# #don't want highest temperature in each rep
-# 
-# getting_mass = c()
-# getting_mass = TSD_data[compensation_mass_calcs$rep_vector %in% TSD_data$studyID & compensation_mass_calcs$initial_temp %in% TSD_data$temp, "mass"]
+#add original data to new dataframe
+compensation_mass_data = merge(compensation_mass_calcs, TSD_data, by.x=c("rep_vector", "initial_temp"), 
+                               by.y=c("studyID", "temp"))
+names(compensation_mass_data)[names(compensation_mass_data) == "mass"] = "initial_mass"
+compensation_mass_data = compensation_mass_data[order(compensation_mass_data$Species),]
 
 #add increased temperature to dataframe
-compensation_mass_calcs$comp_temp = compensation_mass_calcs$initial_temp + 3
+compensation_mass_data$comp_temp = compensation_mass_data$initial_temp + 3
+
 
 #calculate and add mass at compensation temperature w/ initial metabolic rate to dataframe
 
 #need to get class-specific exponents and activation energy from class_values1
-for row in compensation_mass_calcs{
-  class_subset = subset(TSD_data, compensation_mass_calcs$rep_vector == TSD_data$studyID)
-}
+merr = compensation_mass_data$Class %in% class_values1$Class
+merr = c()
 
 
-classes_temporary = TSD_data[compensation_mass_calcs$rep_vector %in% TSD_data$studyID, "Class"]
-classes_temporary = TSD_data[compensation_mass_calcs$rep_vector == TSD_data$studyID, "Class"]
+
+
 
