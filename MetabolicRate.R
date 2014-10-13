@@ -145,13 +145,15 @@ temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
 MTE_allreps=cbind(MTE_allreps, temp_diff)
 warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
 
-##-----------------CALCULATING AVG REPLICATE Q4 FOR THE GENERATED TEMPERATURE-METABOLIC RATE DATA------------------
+##-----------------CALCULATING AVG REPLICATE Q3 FOR THE GENERATED TEMPERATURE-METABOLIC RATE DATA------------------
 
 ### Using the temperature-metabolic rate data generated above and stored in the dataframe 'warming'
-### to calculate an average Q4 value for each replicate
+### to calculate an average Q3 value for each replicate
 
-Q_nochange=(warming$MTE_nochange/warming$MTE_initial)^(4/warming$temp_diff)
-Q_change=(warming$MTE_change/warming$MTE_initial)^(4/warming$temp_diff) 
+#change 4*C change to 3*C change
+
+Q_nochange=(warming$MTE_nochange/warming$MTE_initial)^(3/warming$temp_diff)
+Q_change=(warming$MTE_change/warming$MTE_initial)^(3/warming$temp_diff) 
 Q_diff=100*((Q_change/Q_nochange)-1)
 
 Q_file=c()
@@ -174,7 +176,7 @@ for (unique_rep in class_uniquereplicate){
 write.table(rep_avgs_2, file = "class_rep_avgs_2.csv", sep = ",", col.names = TRUE)
 
 
-##---------------------------AVERAGE Q4 FOR EACH SPECIES-------------------------------------------
+##---------------------------AVERAGE Q3 FOR EACH SPECIES-------------------------------------------
 
 ### If more than one replicate for a species, calculates an average across the replciates so that
 ### each species only has one resulting datapoint
@@ -198,15 +200,15 @@ ClassQ_sp=  as.data.frame(ClassQ_sp, stringsAsFactors = FALSE)
 
 names(ClassQ_sp)[names(ClassQ_sp) == "V1"] = "Species"
 names(ClassQ_sp)[names(ClassQ_sp) == "V2"] = "Class"
-names(ClassQ_sp)[names(ClassQ_sp) == "V3"] = "Q4_noTSR"
-names(ClassQ_sp)[names(ClassQ_sp) == "V4"] = "Q4_TSR"
+names(ClassQ_sp)[names(ClassQ_sp) == "V3"] = "Q3_noTSR"
+names(ClassQ_sp)[names(ClassQ_sp) == "V4"] = "Q3_TSR"
 ClassQ_sp= transform(ClassQ_sp, Q_diff = as.numeric(Q_diff))
 write.table(ClassQ_sp, file = "ClassQ_sp.csv", sep = ",", col.names = TRUE)
 
 #-------------------------SUMMARY STATS AND GRAPHS -------------------------
-mean_Q4noTSR=mean(ClassQ_sp$Q4_noTSR)
-mean_Q4TSR=mean(ClassQ_sp$Q4_TSR)
-t.test(ClassQ_sp$Q4_noTSR,ClassQ_sp$Q4_TSR, paired=TRUE )
+mean_Q3noTSR=mean(ClassQ_sp$Q3_noTSR)
+mean_Q3TSR=mean(ClassQ_sp$Q3_TSR)
+t.test(ClassQ_sp$Q3_noTSR,ClassQ_sp$Q3_TSR, paired=TRUE )
 mean_Qdiff=mean(ClassQ_sp$Q_diff)
 
 Qdiff.gt10=subset(ClassQ_sp, ClassQ_sp$Q_diff > 10)
@@ -220,16 +222,16 @@ num.sp.lt205.Qdiff=length(Qdiff.lt20$Q_diff)
 num.sp=length(ClassQ_sp$Q_diff)
 
 #graph of TSR and no TSR distributions - all classes pooled
-yes_range=range(ClassQ_sp$Q4_noTSR)
-plot(density(ClassQ_sp$Q4_noTSR), xlim = yes_range, main="", col="dark grey", lwd=2, 
-    xlab="Q4")
-lines(density(ClassQ_sp$Q4_TSR), lwd=2)
-legend("topleft", inset=.05, c("Q4-no size", "Q4-size"), fill=c("grey", "black"))
+yes_range=range(ClassQ_sp$Q3_noTSR)
+plot(density(ClassQ_sp$Q3_noTSR), xlim = yes_range, main="", col="dark grey", lwd=2, 
+    xlab="Q3")
+lines(density(ClassQ_sp$Q3_TSR), lwd=2)
+legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
 
-#graph of percent change in Q4 - all classes pooled
+#graph of percent change in Q3 - all classes pooled
 yes_range=range(ClassQ_sp$Q_diff)
 plot(density(ClassQ_sp$Q_diff), xlim = yes_range, main="", col="black", lwd=2, 
-    xlab="Percent difference between Q4-size response and Q4-no size")
+    xlab="Percent difference between Q3-size response and Q3-no size")
 
 #Class-specific graph and results
 Actinoperygii=subset(ClassQ_sp, ClassQ_sp$Class == "Actinoperygii")
@@ -245,7 +247,7 @@ Entognatha=subset(ClassQ_sp, ClassQ_sp$Class == "Entognatha")
 Q_diff_range=c(-40,40)
 y_range=c(0,.12)
 plot(density(Amphibia$Q_diff), xlim=Q_diff_range, ylim=y_range, lwd=2, main="", col="goldenrod1",  
-    xlab="Percent difference in Q4 values")
+    xlab="Percent difference in Q3 values")
 lines(density(Branchiopoda$Q_diff), lwd=2, col="coral4")
 lines(density(Malacostraca$Q_diff),lwd=2, col="blue" )
 lines(density(Maxillopoda$Q_diff), lwd=2, col="grey19")
@@ -279,7 +281,7 @@ x=seq(0,4, 1)
 plot(x, DM_initialR1*(1.387^(x/4)), type="l", lwd=2, xlab="Temperature change (degrees Celsius)",
      ylab="Metabolic Rate (watts)")
 lines(x, DM_initialR1*(1.296^(x/4)), col="gray",lwd=2)
-legend("topleft", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.296"), fill=c("black", "gray"))
+legend("topleft", inset=.05, c("No Size Change (Q3=1.387)", "Size Change (Q3=1.296"), fill=c("black", "gray"))
 
 R2_TSR=DM_initialR1*(1.296^(x/4))
 R2_noTSR=DM_initialR1*(1.387^(x/4))
@@ -294,7 +296,7 @@ N.data= transform(N.data, x = as.numeric(x))
 plot(N.data$x, N.data$N_noTSR, type="o", lwd=2, xlab="Temperature change (degrees Celsius)",
      ylab="Abundance")
 lines(N.data$x, N.data$N_TSR, type="o", lwd=2, col="gray")
-legend("topright", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.296"), fill=c("black", "gray"))
+legend("topright", inset=.05, c("No Size Change (Q3=1.387)", "Size Change (Q3=1.296"), fill=c("black", "gray"))
 
                       
 
