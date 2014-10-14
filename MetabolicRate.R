@@ -330,10 +330,21 @@ compensation_mass_data$comp_mass = (compensation_mass_data$initial_MetRate / (ex
 #determine difference between initial mass and compensation mass (should be positive)
 compensation_mass_data$mass_diff = compensation_mass_data$initial_mass - compensation_mass_data$comp_mass
 
+#determine what percent of initial mass the compensation mass is
+#why are these all basically the same number? in 60%ish range; maybe driven by class exponent & Ea?
+compensation_mass_data$mass_reduction = (compensation_mass_data$comp_mass / compensation_mass_data$initial_mass) * 100
+hist(compensation_mass_data$mass_reduction)
+
+#attempt to compare mass reduction percents for each class
+insect_class = compensation_mass_data[compensation_mass_data$Class == "Insecta",]
+
 # #figures to compare initial and compensation masses
 # #plot(rownames(compensation_mass_data), compensation_mass_data$initial_mass)
 # initial_mass_hist = hist(compensation_mass_data$initial_mass)
 # comp_mass_hist = hist(compensation_mass_data$comp_mass)
 # plot(initial_mass_hist, breaks=seq(0,1000,by=20), col=rgb(0,0,1,1/4))
 # plot(comp_mass_hist, breaks=seq(0,1000,by=20), col=rgb(1,0,0,1/4), add=T)
+
+#averaging of compensation masses and comparison metrics
+
 
