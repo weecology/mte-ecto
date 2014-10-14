@@ -318,14 +318,22 @@ compensation_mass_data = compensation_mass_data[order(compensation_mass_data$Spe
 #add increased temperature to dataframe
 compensation_mass_data$comp_temp = compensation_mass_data$initial_temp + 3
 
+#add class-specific exponent and activation energy (from class_values1) to dataframe
+getting_class_values = class_values1[match(compensation_mass_data$Class, class_values1$Class),]
+compensation_mass_data = cbind(compensation_mass_data, getting_class_values$exponent, getting_class_values$Ea)
+names(compensation_mass_data)[names(compensation_mass_data) == "getting_class_values$exponent"] = "class_exponent"
+names(compensation_mass_data)[names(compensation_mass_data) == "getting_class_values$Ea"] = "class_Ea"
 
-#calculate and add mass at compensation temperature w/ initial metabolic rate to dataframe
+#calculate compensation mass using rearranged MTE equation
+compensation_mass_data$comp_mass = (compensation_mass_data$initial_MetRate / (exp(compensation_mass_data$class_Ea / (.00008617 * (compensation_mass_data$comp_temp + 273.15))))) ^ (1 / compensation_mass_data$class_exponent)
 
-#need to get class-specific exponents and activation energy from class_values1
-merr = compensation_mass_data$Class %in% class_values1$Class
-merr = c()
+#determine difference between initial mass and compensation mass (should be positive)
+compensation_mass_data$mass_diff = compensation_mass_data$initial_mass - compensation_mass_data$comp_mass
 
-
-
-
+# #figures to compare initial and compensation masses
+# #plot(rownames(compensation_mass_data), compensation_mass_data$initial_mass)
+# initial_mass_hist = hist(compensation_mass_data$initial_mass)
+# comp_mass_hist = hist(compensation_mass_data$comp_mass)
+# plot(initial_mass_hist, breaks=seq(0,1000,by=20), col=rgb(0,0,1,1/4))
+# plot(comp_mass_hist, breaks=seq(0,1000,by=20), col=rgb(1,0,0,1/4), add=T)
 
