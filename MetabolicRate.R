@@ -325,18 +325,35 @@ names(compensation_mass_data)[names(compensation_mass_data) == "getting_class_va
 names(compensation_mass_data)[names(compensation_mass_data) == "getting_class_values$Ea"] = "class_Ea"
 
 #calculate compensation mass using rearranged MTE equation
-compensation_mass_data$comp_mass = (compensation_mass_data$initial_MetRate / (exp(compensation_mass_data$class_Ea / (.00008617 * (compensation_mass_data$comp_temp + 273.15))))) ^ (1 / compensation_mass_data$class_exponent)
+compensation_mass_data$comp_mass = (compensation_mass_data$initial_MetRate / 
+                                  (exp(compensation_mass_data$class_Ea / (.00008617 * 
+                                  (compensation_mass_data$comp_temp + 273.15))))) ^ (1 / 
+                                  compensation_mass_data$class_exponent)
 
 #determine difference between initial mass and compensation mass (should be positive)
 compensation_mass_data$mass_diff = compensation_mass_data$initial_mass - compensation_mass_data$comp_mass
 
 #determine what percent of initial mass the compensation mass is
+#see CompMassTest.xls for test of first replicate
 #why are these all basically the same number? in 60%ish range; maybe driven by class exponent & Ea?
-compensation_mass_data$mass_reduction = (compensation_mass_data$comp_mass / compensation_mass_data$initial_mass) * 100
-hist(compensation_mass_data$mass_reduction)
+compensation_mass_data$mass_reduction = (compensation_mass_data$comp_mass / 
+                                           compensation_mass_data$initial_mass) * 100
+hist(compensation_mass_data$mass_reduction, xlim=c(0,100))
 
 #attempt to compare mass reduction percents for each class
 insect_class = compensation_mass_data[compensation_mass_data$Class == "Insecta",]
+
+#histograms for each class' mass reduction
+pdf("ClassMassReduction.pdf")
+par(mfrow=c(3,3))
+
+for (current_class in class_values1$Class){
+  class_subset = subset(compensation_mass_data, compensation_mass_data$Class == current_class)
+  hist(class_subset$mass_reduction, xlim=c(50,90), main=NULL)
+  mtext(paste("Class:", class_subset$Class))
+}
+
+dev.off()
 
 # #figures to compare initial and compensation masses
 # #plot(rownames(compensation_mass_data), compensation_mass_data$initial_mass)
