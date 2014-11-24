@@ -300,7 +300,7 @@ legend("topright", inset=.05, c("No Size Change (Q4=1.387)", "Size Change (Q4=1.
 ##-----------------CALCULATE COMPENSATION BODY MASS----------------------------------
 
 ### Using metabolic rates for initial mass and temperature, which have already ("MTE_initial") 
-### been calculated to determine what mass each species would need to be to compensate for a
+### been calculated, to determine what mass each species would need to be to compensate for a
 ### 3*C increase in temperature. 
 
 
@@ -363,5 +363,20 @@ dev.off()
 # plot(comp_mass_hist, breaks=seq(0,1000,by=20), col=rgb(1,0,0,1/4), add=T)
 
 #averaging of compensation masses and comparison metrics
+
+##-------------MOST EXTREME EMPIRICAL MASS CHANGES----------------------
+
+# Calculate mass reduction for most extreme temperature changes in each of the 
+# replicates to determine what magnitude of mass change is biologically feasible
+
+replicate_temps = c()
+for(current_replicate in replicate){
+  replicate_data = subset(TSD_data, TSD_data$studyID == current_replicate)
+  lowest_temperature = min(replicate_data$temp)
+  highest_temperature = max(replicate_data$temp)
+  replicate_temps = cbind(current_replicate, lowest_temperature)
+  #for difference where it's greater than 3*
+}
+
 
 
