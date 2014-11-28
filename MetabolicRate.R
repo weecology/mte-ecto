@@ -369,14 +369,28 @@ dev.off()
 # Calculate mass reduction for most extreme temperature changes in each of the 
 # replicates to determine what magnitude of mass change is biologically feasible
 
+# Looking at temperature differences between highest and lowest temp for each
+# replicate
 replicate_temps = c()
 for(current_replicate in replicate){
   replicate_data = subset(TSD_data, TSD_data$studyID == current_replicate)
   lowest_temperature = min(replicate_data$temp)
   highest_temperature = max(replicate_data$temp)
-  replicate_temps = cbind(current_replicate, lowest_temperature)
-  #for difference where it's greater than 3*
+  temperature_difference = highest_temperature - lowest_temperature
+  replicate_temps = rbind(replicate_temps, c(current_replicate, lowest_temperature, highest_temperature, temperature_difference))
 }
+
+# Get lowest and highest temperatures (and then corresponding masses) for each replicate
+for(current_replicate in replicate){
+  replicate_data2 = subset(TSD_data, TSD_data$studyID == current_replicate)
+  lowest_unique_temperature = subset(replicate_data2, 
+#      for(current_unique_temperature in replicate_data){
+#        lowest_unique_temperature = subset(replicate_data2, min(replicate_data2$temp))
+#      }
+}
+
+
+
 
 
 
