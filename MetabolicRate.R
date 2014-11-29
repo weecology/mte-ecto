@@ -364,39 +364,43 @@ dev.off()
 
 #averaging of compensation masses and comparison metrics
 
-##-------------MOST EXTREME EMPIRICAL MASS CHANGES----------------------
+##-------------EMPIRICAL MASS CHANGES FOR EXTREME TEMP CHANGES------------------
 
 # Calculate mass reduction for most extreme temperature changes in each of the 
 # replicates to determine what magnitude of mass change is biologically feasible
 
 
 # Get lowest and highest temperatures (and then corresponding masses) for each replicate
-empirical_mass_change = c()
+empirical_mass_change_extreme = c()
 for(current_replicate in replicate){
   single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
   highest_temperature = subset(single_replicate, single_replicate$temp == max(single_replicate$temp))
   lowest_temperature = subset(single_replicate, single_replicate$temp == min(single_replicate$temp))
-  empirical_mass_change = rbind(empirical_mass_change, c(current_replicate, highest_temperature$temp, highest_temperature$mass, lowest_temperature$temp, lowest_temperature$mass))
+  empirical_mass_change_extreme = rbind(empirical_mass_change_extreme, c(current_replicate, highest_temperature$temp, highest_temperature$mass, lowest_temperature$temp, lowest_temperature$mass))
 }
 
-# Fix dataframe
-empirical_mass_change = data.frame(empirical_mass_change)
-names(empirical_mass_change) = c("studyID", "highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")
-empirical_mass_change[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")] = as.numeric(as.character(unlist(empirical_mass_change[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")])))
+# Necessary changes to make dataframe useful
+empirical_mass_change_extreme = data.frame(empirical_mass_change_extreme)
+names(empirical_mass_change_extreme) = c("studyID", "highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")
+empirical_mass_change_extreme[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")] = as.numeric(as.character(unlist(empirical_mass_change_extreme[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")])))
 
 # Get temperature difference between high and low temps for each replicate
-empirical_mass_change$temp_difference = empirical_mass_change$highest_temp - empirical_mass_change$lowest_temp
+empirical_mass_change_extreme$temp_difference = empirical_mass_change_extreme$highest_temp - empirical_mass_change_extreme$lowest_temp
 
 # Get mass reduction value for each replicate, with any increase in body size resulting in null
-empirical_mass_change$mass_reduction = (empirical_mass_change$highest_temp_mass / empirical_mass_change$lowest_temp_mass) * 100
-empirical_mass_change$mass_reduction[empirical_mass_change$mass_reduction >= 100] = NA
-hist(empirical_mass_change$mass_reduction)
+empirical_mass_change_extreme$mass_reduction = (empirical_mass_change_extreme$highest_temp_mass / empirical_mass_change_extreme$lowest_temp_mass) * 100
+empirical_mass_change_extreme$mass_reduction[empirical_mass_change_extreme$mass_reduction >= 100] = NA
+hist(empirical_mass_change_extreme$mass_reduction)
 
-# Create histogram for each of 3 temp difference categories (0-10, 10-20, 20-30)
-realistic_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference <= 4)
-low_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference < 10)
-med_temp_diff = subset(empirical_mass_change, (10 <= empirical_mass_change$temp_difference) & (empirical_mass_change$temp_difference < 20))
-high_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference >= 20)
+# Create histogram for each of 3 temp difference categories:
+#   Realistic range: 0-4 degrees
+#   Low range: 0-10 degrees
+#   Medium range: 10-20 degrees
+#   High range: 20-30 degrees
+realistic_temp_diff = subset(empirical_mass_change_extreme, empirical_mass_change_extreme$temp_difference <= 4)
+low_temp_diff = subset(empirical_mass_change_extreme, empirical_mass_change_extreme$temp_difference < 10)
+med_temp_diff = subset(empirical_mass_change_extreme, (10 <= empirical_mass_change_extreme$temp_difference) & (empirical_mass_change_extreme$temp_difference < 20))
+high_temp_diff = subset(empirical_mass_change_extreme, empirical_mass_change_extreme$temp_difference >= 20)
 
 hist(realistic_temp_diff$mass_reduction, xlim = c(0,100))
 hist(low_temp_diff$mass_reduction, xlim = c(0,100))
@@ -404,5 +408,40 @@ hist(med_temp_diff$mass_reduction, xlim = c(0,100))
 hist(high_temp_diff$mass_reduction, xlim = c(0,100))
 
 
-##----------------REALISTIC EMPIRICAL MASS CHANGES-----------------------
+##-------------EMPIRICAL MASS CHANGES FOR REALISTIC TEMP CHANGES--------------
+
+# Calculate mass reduction for as many realistic temperature changes (i.e., 3*) 
+# as there are in all of the replicates to determine what magnitude of mass change
+# is realistic
+
+# Turn unique row names into column in original dataset
+TSD_data = data.frame(as.nu2eric(rownames(TSD_data)), TSD_data)
+colnames(TSD_data)[1] = "row_names"
+
+# Find all temperatures pairs that differ by 3 degrees in each replicate
+all_combinations = c()
+for(current_replicate in replicate){
+  single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
+  all_combinations_names = combn(single_replicate$row_names, 2)
+  all_combinations_names = t(all_combinations_names)
+  all_combinations_temps = combn(single_replicate$temp, 2)
+  all_combinations_temps = t(all_combinations_temps)
+  all_combinations = cbind(all_combinations_names, all_combinations_temps)
+  all_combinations = data.frame(all_combinations)
+  names(all_combinations) = c("row_name_1", "row_name_2", "temp_1", "temp_1")
+  all_combinations[,c("temp_1", "temp_2")] = as.numeric(as.character(unlist(all_combinations[,c("temp_1", "temp_2")])))
+  all_combinations$temp_diff = all_combinations$temp_2 - all_combinations$temp_1
+  #temp_diff = all_combinations[,4] - all_combinations[,3]
+  #all_combinations = cbind(all_combinations, temp_diff)
+  #all_combinations = subset(all_combinations, all_combinations[,5] == 3)
+  #all_combinations = rbind(all_combinations)
+}
+
+
+
+
+empirical_mass_change_realistic = c()
+
+
+
 
