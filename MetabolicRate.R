@@ -338,7 +338,7 @@ compensation_mass_data$mass_diff = compensation_mass_data$initial_mass - compens
 #why are these all basically the same number? in 60%ish range; maybe driven by class exponent & Ea?
 compensation_mass_data$mass_reduction = (compensation_mass_data$comp_mass / 
                                            compensation_mass_data$initial_mass) * 100
-hist(compensation_mass_data$mass_reduction, xlim=c(0,100))
+hist(compensation_mass_data$mass_reduction, breaks=2, xlim=c(0,100))
 
 #attempt to compare mass reduction percents for each class
 insect_class = compensation_mass_data[compensation_mass_data$Class == "Insecta",]
@@ -369,28 +369,40 @@ dev.off()
 # Calculate mass reduction for most extreme temperature changes in each of the 
 # replicates to determine what magnitude of mass change is biologically feasible
 
-# Looking at temperature differences between highest and lowest temp for each
-# replicate
-replicate_temps = c()
-for(current_replicate in replicate){
-  replicate_data = subset(TSD_data, TSD_data$studyID == current_replicate)
-  lowest_temperature = min(replicate_data$temp)
-  highest_temperature = max(replicate_data$temp)
-  temperature_difference = highest_temperature - lowest_temperature
-  replicate_temps = rbind(replicate_temps, c(current_replicate, lowest_temperature, highest_temperature, temperature_difference))
-}
 
 # Get lowest and highest temperatures (and then corresponding masses) for each replicate
+empirical_mass_change = c()
 for(current_replicate in replicate){
-  replicate_data2 = subset(TSD_data, TSD_data$studyID == current_replicate)
-  lowest_unique_temperature = subset(replicate_data2, 
-#      for(current_unique_temperature in replicate_data){
-#        lowest_unique_temperature = subset(replicate_data2, min(replicate_data2$temp))
-#      }
+  single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
+  highest_temperature = subset(single_replicate, single_replicate$temp == max(single_replicate$temp))
+  lowest_temperature = subset(single_replicate, single_replicate$temp == min(single_replicate$temp))
+  empirical_mass_change = rbind(empirical_mass_change, c(current_replicate, highest_temperature$temp, highest_temperature$mass, lowest_temperature$temp, lowest_temperature$mass))
 }
 
+# Fix dataframe
+empirical_mass_change = data.frame(empirical_mass_change)
+names(empirical_mass_change) = c("studyID", "highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")
+empirical_mass_change[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")] = as.numeric(as.character(unlist(empirical_mass_change[,c("highest_temp", "highest_temp_mass", "lowest_temp", "lowest_temp_mass")])))
+
+# Get temperature difference between high and low temps for each replicate
+empirical_mass_change$temp_difference = empirical_mass_change$highest_temp - empirical_mass_change$lowest_temp
+
+# Get mass reduction value for each replicate, with any increase in body size resulting in null
+empirical_mass_change$mass_reduction = (empirical_mass_change$highest_temp_mass / empirical_mass_change$lowest_temp_mass) * 100
+empirical_mass_change$mass_reduction[empirical_mass_change$mass_reduction >= 100] = NA
+hist(empirical_mass_change$mass_reduction)
+
+# Create histogram for each of 3 temp difference categories (0-10, 10-20, 20-30)
+realistic_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference <= 4)
+low_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference < 10)
+med_temp_diff = subset(empirical_mass_change, (10 <= empirical_mass_change$temp_difference) & (empirical_mass_change$temp_difference < 20))
+high_temp_diff = subset(empirical_mass_change, empirical_mass_change$temp_difference >= 20)
+
+hist(realistic_temp_diff$mass_reduction, xlim = c(0,100))
+hist(low_temp_diff$mass_reduction, xlim = c(0,100))
+hist(med_temp_diff$mass_reduction, xlim = c(0,100))
+hist(high_temp_diff$mass_reduction, xlim = c(0,100))
 
 
-
-
+##----------------REALISTIC EMPIRICAL MASS CHANGES-----------------------
 
