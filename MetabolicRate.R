@@ -415,33 +415,40 @@ hist(high_temp_diff$mass_reduction, xlim = c(0,100))
 # is realistic
 
 # Turn unique row names into column in original dataset
-TSD_data = data.frame(as.nu2eric(rownames(TSD_data)), TSD_data)
+TSD_data = data.frame(as.numeric(rownames(TSD_data)), TSD_data)
 colnames(TSD_data)[1] = "row_names"
 
-# Find all temperatures pairs that differ by 3 degrees in each replicate
+# Find all temperatures pairs, with unique identifiers, that differ by 3 degrees in each replicate
 all_combinations = c()
 for(current_replicate in replicate){
   single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
-  all_combinations_names = combn(single_replicate$row_names, 2)
-  all_combinations_names = t(all_combinations_names)
-  all_combinations_temps = combn(single_replicate$temp, 2)
-  all_combinations_temps = t(all_combinations_temps)
-  all_combinations = cbind(all_combinations_names, all_combinations_temps)
-  all_combinations = data.frame(all_combinations)
-  names(all_combinations) = c("row_name_1", "row_name_2", "temp_1", "temp_1")
-  all_combinations[,c("temp_1", "temp_2")] = as.numeric(as.character(unlist(all_combinations[,c("temp_1", "temp_2")])))
-  all_combinations$temp_diff = all_combinations$temp_2 - all_combinations$temp_1
-  #temp_diff = all_combinations[,4] - all_combinations[,3]
-  #all_combinations = cbind(all_combinations, temp_diff)
-  #all_combinations = subset(all_combinations, all_combinations[,5] == 3)
-  #all_combinations = rbind(all_combinations)
+  single_replicate_temps_combos = combn(single_replicate$temp, 2)
+  single_replicate_temps_combos = t(single_replicate_temps_combos)
+  single_replicate_masses_combos = combn(single_replicate$mass, 2)
+  single_replicate_masses_combos = t(single_replicate_masses_combos)
+  single_replicate_combos = cbind(single_replicate_temps_combos, single_replicate_masses_combos)
+  single_replicate_combos = data.frame(single_replicate_combos)
+  single_replicate_combos = cbind(current_replicate, single_replicate_combos)
+  all_combinations = rbind(all_combinations, single_replicate_combos)
 }
 
+# Remove temperature pairs that differ by anything other than 3*
+names(all_combinations) = c("studyID", "lower_temp", "higher_temp", "lower_temp_mass", "higher_temp_mass")
+all_combinations$temp_diff = all_combinations$higher_temp - all_combinations$lower_temp
+empirical_mass_change_realistic = subset(all_combinations, all_combinations$temp_diff == 3)
 
+# Calculate mass reduction for realistic temperature change (i.e., 3*), replacing values over 100 w/ NA
+empirical_mass_change_realistic$mass_reduction = (empirical_mass_change_realistic$higher_temp_mass / empirical_mass_change_realistic$lower_temp_mass) * 100
+empirical_mass_change_realistic$mass_reduction[empirical_mass_change_realistic$mass_reduction >= 100] = NA
+realistic_histogram = hist(empirical_mass_change_realistic$mass_reduction, breaks=3, xlim = c(0,100))
+realistic_histogram$breaks
+realistic_histogram$counts
+(realistic_histogram$counts / sum(realistic_histogram$counts)) * 100
 
-
-empirical_mass_change_realistic = c()
-
-
+# Compare empirical realistic temperature change mass reduction to theoretical
+theoretical_histogram = hist(compensation_mass_data$mass_reduction, breaks=2, xlim=c(0,100))
+theoretical_histogram$breaks
+theoretical_histogram$counts
+(theoretical_histogram$counts / sum(theoretical_histogram$counts)) * 100
 
 
