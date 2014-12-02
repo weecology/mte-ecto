@@ -451,4 +451,8 @@ theoretical_histogram$breaks
 theoretical_histogram$counts
 (theoretical_histogram$counts / sum(theoretical_histogram$counts)) * 100
 
+# Plot together
+realistic_histogram = hist(empirical_mass_change_realistic$mass_reduction, breaks=3, xlim = c(0,100), ylim = c(0,200), col = "red")
+theoretical_histogram = hist(compensation_mass_data$mass_reduction, breaks=2, xlim=c(0,100), add = T, col = "blue")
+
 
