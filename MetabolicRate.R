@@ -472,20 +472,56 @@ for (current_row_name in all_subset_rownames){
 }
 
 # Code from previous Q10 analysis, just replaced TSD_data with three_degree_subset_data
-replicate=unique(three_degree_subset_data$studyID)
-rep_linker=c()
+# What is the purpose of all this code?
+replicate_subset=unique(three_degree_subset_data$studyID)
+rep_linker_subset=c()
 
 #extracting species and replicate info
-for (current_replicate in replicate){
-  replicate_data = subset(three_degree_subset_data, three_degree_subset_data$studyID == current_replicate)
-  replicate_species= unique(replicate_data$Species)
-  replicate_class=unique(replicate_data$Class)
-  rep_linker=rbind(rep_linker, c(current_replicate, replicate_species, replicate_class))
+for (current_replicate in replicate_subset){
+  replicate_data_subset = subset(three_degree_subset_data, three_degree_subset_data$studyID == current_replicate)
+  replicate_species_subset = unique(replicate_data_subset$Species)
+  replicate_class_subset = unique(replicate_data_subset$Class)
+  rep_linker_subset = rbind(rep_linker_subset, c(current_replicate, replicate_species_subset, replicate_class_subset))
 }
-rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
+rep_linker_sort_subset = rep_linker_subset[order(rep_linker_subset[,2], rep_linker_subset[,1]),]
 #write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
-class_uniquereplicate=unique(rep_linker_sort[,1])
+class_uniquereplicate_subset=unique(rep_linker_sort_subset[,1])
 
+
+MTE_allreps=c()
+#unused empty vector?
+MTE_allcompare=c()
+Classes_all=unique(three_degree_subset_data$Class)
+
+for (index_class in Classes_all){
+  class_TSD= subset(three_degree_subset_data, three_degree_subset_data$Class == index_class)
+  class_MTE= subset(class_values1, class_values1$Class == index_class)
+  class_replicate=unique(class_TSD$studyID)
+  
+  for (index_replicate in class_replicate){
+    MTE_repdata=c()
+    current_data= subset (class_TSD, class_TSD$studyID == index_replicate)
+    temps=unique(current_data$temp)
+    
+    for (current_temp in temps){
+      min_mass=current_data$mass[current_data$temp==current_temp]
+      repeater=length(temps)
+      MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(current_temp+273.15)))))
+      MTE_nochange=min_mass^(class_MTE$exponent)*exp(class_MTE$Ea/(.00008617*(temps+273.15)))
+      MTE_change=(current_data$mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(temps+273.15)))))
+      rep_vector=c(rep(index_replicate,repeater))
+      Tmin_vector=c(rep(current_temp, repeater))
+      MTE_repdata=cbind(temps,Tmin_vector, MTE_initial, MTE_nochange, MTE_change)
+      MTE_repdata=as.data.frame(MTE_repdata)
+      MTE_rep=data.frame(cbind(MTE_repdata, rep_vector), stringsAsFactors=FALSE)
+      MTE_allreps=rbind(MTE_allreps, MTE_rep)     
+    }
+  }
+}
+
+temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
+MTE_allreps=cbind(MTE_allreps, temp_diff)
+warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
 
 
 
