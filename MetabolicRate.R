@@ -424,18 +424,20 @@ colnames(TSD_data)[1] = "row_names"
 all_combinations = c()
 for(current_replicate in replicate){
   single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
+  single_replicate_rownames_combos = combn(single_replicate$row_names, 2)
+  single_replicate_rownames_combos = t(single_replicate_rownames_combos)
   single_replicate_temps_combos = combn(single_replicate$temp, 2)
   single_replicate_temps_combos = t(single_replicate_temps_combos)
   single_replicate_masses_combos = combn(single_replicate$mass, 2)
   single_replicate_masses_combos = t(single_replicate_masses_combos)
-  single_replicate_combos = cbind(single_replicate_temps_combos, single_replicate_masses_combos)
+  single_replicate_combos = cbind(single_replicate_rownames_combos, single_replicate_temps_combos, single_replicate_masses_combos)
   single_replicate_combos = data.frame(single_replicate_combos)
   single_replicate_combos = cbind(current_replicate, single_replicate_combos)
   all_combinations = rbind(all_combinations, single_replicate_combos)
 }
 
 # Remove temperature pairs that differ by anything other than 3*
-names(all_combinations) = c("studyID", "lower_temp", "higher_temp", "lower_temp_mass", "higher_temp_mass")
+names(all_combinations) = c("studyID", "row_name_1", "row_name_2", "lower_temp", "higher_temp", "lower_temp_mass", "higher_temp_mass")
 all_combinations$temp_diff = all_combinations$higher_temp - all_combinations$lower_temp
 empirical_mass_change_realistic = subset(all_combinations, all_combinations$temp_diff == 3)
 
@@ -456,5 +458,34 @@ theoretical_histogram$counts
 # Plot together
 realistic_histogram = hist(empirical_mass_change_realistic$mass_reduction, breaks=3, xlim = c(0,100), ylim = c(0,200), col = "red")
 theoretical_histogram = hist(compensation_mass_data$mass_reduction, breaks=2, xlim=c(0,100), add = T, col = "blue")
+
+
+##-------------------Q10 CALCULATIONS ON 3* TEMP DIFF SUBSET--------------
+
+# Get all columns from TSD_data into the subset dataset
+all_subset_rownames = c(empirical_mass_change_realistic$row_name_1, empirical_mass_change_realistic$row_name_2)
+
+three_degree_subset_data = c()
+for (current_row_name in all_subset_rownames){
+  subset_data = subset(TSD_data, TSD_data$row_names == current_row_name)
+  three_degree_subset_data = rbind(three_degree_subset_data, subset_data)
+}
+
+# Code from previous Q10 analysis, just replaced TSD_data with three_degree_subset_data
+replicate=unique(three_degree_subset_data$studyID)
+rep_linker=c()
+
+#extracting species and replicate info
+for (current_replicate in replicate){
+  replicate_data = subset(three_degree_subset_data, three_degree_subset_data$studyID == current_replicate)
+  replicate_species= unique(replicate_data$Species)
+  replicate_class=unique(replicate_data$Class)
+  rep_linker=rbind(rep_linker, c(current_replicate, replicate_species, replicate_class))
+}
+rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
+#write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
+class_uniquereplicate=unique(rep_linker_sort[,1])
+
+
 
 
