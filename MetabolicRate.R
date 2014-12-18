@@ -462,8 +462,13 @@ theoretical_histogram = hist(compensation_mass_data$mass_reduction, breaks=2, xl
 
 ##-------------------Q10 CALCULATIONS ON 3* TEMP DIFF SUBSET--------------
 
-# Get all columns from TSD_data into the subset dataset
+# Repeating previous analysis to get Q10 values for replicate pairs, except only 
+# for pairs that have a 3 degree difference in temperature; new sections indicated
+# by four pound symbols
+
+#### Get all columns from TSD_data into the subset dataset
 all_subset_rownames = c(empirical_mass_change_realistic$row_name_1, empirical_mass_change_realistic$row_name_2)
+all_subset_rownames = sort(unique(all_subset_rownames))
 
 three_degree_subset_data = c()
 for (current_row_name in all_subset_rownames){
@@ -488,40 +493,159 @@ rep_linker_sort_subset = rep_linker_subset[order(rep_linker_subset[,2], rep_link
 class_uniquereplicate_subset=unique(rep_linker_sort_subset[,1])
 
 
-MTE_allreps=c()
+MTE_allreps_subset=c()
 #unused empty vector?
-MTE_allcompare=c()
-Classes_all=unique(three_degree_subset_data$Class)
+MTE_allcompare_subset=c()
+Classes_all_subset=unique(three_degree_subset_data$Class)
 
-for (index_class in Classes_all){
-  class_TSD= subset(three_degree_subset_data, three_degree_subset_data$Class == index_class)
-  class_MTE= subset(class_values1, class_values1$Class == index_class)
-  class_replicate=unique(class_TSD$studyID)
-  
-  for (index_replicate in class_replicate){
-    MTE_repdata=c()
-    current_data= subset (class_TSD, class_TSD$studyID == index_replicate)
-    temps=unique(current_data$temp)
-    
-    for (current_temp in temps){
-      min_mass=current_data$mass[current_data$temp==current_temp]
-      repeater=length(temps)
-      MTE_initial=(min_mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(current_temp+273.15)))))
-      MTE_nochange=min_mass^(class_MTE$exponent)*exp(class_MTE$Ea/(.00008617*(temps+273.15)))
-      MTE_change=(current_data$mass^(class_MTE$exponent))*(exp(((class_MTE$Ea)/(.00008617*(temps+273.15)))))
-      rep_vector=c(rep(index_replicate,repeater))
-      Tmin_vector=c(rep(current_temp, repeater))
-      MTE_repdata=cbind(temps,Tmin_vector, MTE_initial, MTE_nochange, MTE_change)
-      MTE_repdata=as.data.frame(MTE_repdata)
-      MTE_rep=data.frame(cbind(MTE_repdata, rep_vector), stringsAsFactors=FALSE)
-      MTE_allreps=rbind(MTE_allreps, MTE_rep)     
+for (index_class_subset in Classes_all_subset){
+  class_TSD_subset= subset(three_degree_subset_data, three_degree_subset_data$Class == index_class_subset)
+  class_MTE_subset= subset(class_values1, class_values1$Class == index_class_subset)
+  class_replicate_subset=unique(class_TSD_subset$studyID)
+
+  for (index_replicate_subset in class_replicate_subset){
+    MTE_repdata_subset=c()
+    current_data_subset= subset(class_TSD_subset, class_TSD_subset$studyID == index_replicate_subset)
+    temps_subset=unique(current_data_subset$temp)
+
+    for (current_temp_subset in temps_subset){
+      min_mass_subset=current_data_subset$mass[current_data_subset$temp==current_temp_subset]
+      repeater_subset=length(temps_subset)
+      MTE_initial_subset=(min_mass_subset^(class_MTE_subset$exponent))*(exp(((class_MTE_subset$Ea)/(.00008617*(current_temp_subset+273.15)))))
+      MTE_nochange_subset=min_mass_subset^(class_MTE_subset$exponent)*exp(class_MTE_subset$Ea/(.00008617*(temps_subset+273.15)))
+      MTE_change_subset=(current_data_subset$mass^(class_MTE_subset$exponent))*(exp(((class_MTE_subset$Ea)/(.00008617*(temps_subset+273.15)))))
+      rep_vector_subset=c(rep(index_replicate_subset,repeater_subset))
+      Tmin_vector_subset=c(rep(current_temp_subset, repeater_subset))
+      MTE_repdata_subset=cbind(temps_subset,Tmin_vector_subset, MTE_initial_subset, MTE_nochange_subset, MTE_change_subset)
+      MTE_repdata_subset=as.data.frame(MTE_repdata_subset)
+      MTE_rep_subset=data.frame(cbind(MTE_repdata_subset, rep_vector_subset), stringsAsFactors=FALSE)
+      MTE_allreps_subset=rbind(MTE_allreps_subset, MTE_rep_subset)     
     }
   }
 }
 
-temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
-MTE_allreps=cbind(MTE_allreps, temp_diff)
-warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
+temp_diff_subset=MTE_allreps_subset$temps_subset-MTE_allreps_subset$Tmin_vector_subset
+MTE_allreps_subset=cbind(MTE_allreps_subset, temp_diff_subset)
+warming_subset= subset(MTE_allreps_subset, MTE_allreps_subset$temp_diff_subset > 0) #cleans out decreasing temperature situations
+
+#### Want just 3 degree difference pairs
+warming_subset = subset(warming_subset, warming_subset$temp_diff_subset == 3)
 
 
+# Replicates' average Q10s
+Q_nochange_subset=(warming_subset$MTE_nochange_subset/warming_subset$MTE_initial_subset)^(3/warming_subset$temp_diff_subset)
+Q_change_subset=(warming_subset$MTE_change_subset/warming_subset$MTE_initial_subset)^(3/warming_subset$temp_diff_subset) 
+Q_diff_subset=100*((Q_change_subset/Q_nochange_subset)-1)
+
+Q_file_subset=c()
+Q_file_subset=cbind(warming_subset, Q_nochange_subset, Q_change_subset, Q_diff_subset)
+#write.table(Q_file, file = "ClassQ_file.csv", sep = ",", col.names = TRUE)
+#END RAW DATAFILE CREATION
+
+#Average Q for each study
+rep_avgs_subset=c()
+for (unique_rep_subset in class_uniquereplicate_subset){
+  rep_subset_subset = subset(Q_file_subset, Q_file_subset$rep_vector_subset == unique_rep_subset) 
+  #sp_name= rep_linker_sort[,2][ which (rep_linker_sort[,1] == unique_rep),]
+  sp_name_subset= subset(rep_linker_sort_subset, rep_linker_sort_subset[,1] == unique_rep_subset,)
+  avg_Q_nochange_subset=mean(rep_subset_subset$Q_nochange_subset)
+  avg_Q_change_subset=mean(rep_subset_subset$Q_change_subset)
+  rep_avgs_subset=rbind(rep_avgs_subset, c(unique_rep_subset, avg_Q_nochange_subset,avg_Q_change_subset, sp_name_subset))
+}
+rep_avgs_1_subset=  as.data.frame(rep_avgs_subset, stringsAsFactors = FALSE)
+rep_avgs_2_subset= transform(rep_avgs_1_subset, V2 = as.numeric(V2), V3 = as.numeric(V3))
+write.table(rep_avgs_2_subset, file = "class_rep_avgs_2_subset.csv", sep = ",", col.names = TRUE)
+
+
+# Species' average Q10s
+Q_1_subset=c()
+species_subset=unique(rep_avgs_2_subset$V5)
+for (current_sp_subset in species_subset){
+  sp_subset_subset= subset(rep_avgs_2_subset, rep_avgs_2_subset$V5 == current_sp_subset) 
+  sp_class_subset=unique(sp_subset_subset[,6])
+  sp_Q_nochange_subset=mean(sp_subset_subset[,2])
+  sp_Q_change_subset=mean(sp_subset_subset[,3])
+  Q_1_subset=rbind(Q_1_subset, c(current_sp_subset, sp_class_subset, sp_Q_nochange_subset, sp_Q_change_subset))
+}
+
+Q_2_subset=  as.data.frame(Q_1_subset, stringsAsFactors = FALSE)
+Q_sp_subset= transform(Q_2_subset, V3 = as.numeric(V3), V4 = as.numeric(V4))
+Q_diff_subset=100*((Q_sp_subset$V4/Q_sp_subset$V3)-1)
+ClassQ_sp_subset=cbind(Q_sp_subset, Q_diff_subset)
+ClassQ_sp_subset=ClassQ_sp_subset[order(ClassQ_sp_subset[,2], ClassQ_sp_subset[,1]),]
+ClassQ_sp_subset=as.data.frame(ClassQ_sp_subset, stringsAsFactors = FALSE)
+
+names(ClassQ_sp_subset)[names(ClassQ_sp_subset) == "V1"] = "Species"
+names(ClassQ_sp_subset)[names(ClassQ_sp_subset) == "V2"] = "Class"
+names(ClassQ_sp_subset)[names(ClassQ_sp_subset) == "V3"] = "Q3_noTSR"
+names(ClassQ_sp_subset)[names(ClassQ_sp_subset) == "V4"] = "Q3_TSR"
+ClassQ_sp_subset= transform(ClassQ_sp_subset, Q_diff_subset = as.numeric(Q_diff_subset))
+write.table(ClassQ_sp_subset, file = "ClassQ_sp_subset.csv", sep = ",", col.names = TRUE)
+
+
+# Summary stats and graphs
+mean_Q3noTSR_subset=mean(ClassQ_sp_subset$Q3_noTSR)
+mean_Q3TSR_subset=mean(ClassQ_sp_subset$Q3_TSR)
+t.test(ClassQ_sp_subset$Q3_noTSR,ClassQ_sp_subset$Q3_TSR, paired=TRUE )
+mean_Qdiff_subset=mean(ClassQ_sp_subset$Q_diff_subset)
+
+Qdiff.gt10_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Q_diff_subset > 10)
+Qdiff.lt10_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Q_diff_subset < -10)
+Qdiff.lt15_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Q_diff_subset < -15)
+Qdiff.lt20_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Q_diff_subset < -20)
+num.sp.gt.10.Qdiff_subset=length(Qdiff.gt10_subset$Q_diff_subset)
+num.sp.lt.10.Qdiff_subset=length(Qdiff.lt10_subset$Q_diff_subset)
+num.sp.lt.15.Qdiff_subset=length(Qdiff.lt15_subset$Q_diff_subset)
+num.sp.lt205.Qdiff_subset=length(Qdiff.lt20_subset$Q_diff_subset)
+num.sp_subset=length(ClassQ_sp_subset$Q_diff_subset)
+
+#graph of TSR and no TSR distributions - all classes pooled
+yes_range_subset=range(ClassQ_sp_subset$Q3_noTSR)
+plot(density(ClassQ_sp_subset$Q3_noTSR), xlim = yes_range_subset, main="", col="dark grey", lwd=2, 
+     xlab="Q3")
+lines(density(ClassQ_sp_subset$Q3_TSR), lwd=2)
+legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
+
+#graph of percent change in Q3 - all classes pooled
+yes_range_subset=range(ClassQ_sp_subset$Q_diff_subset)
+plot(density(ClassQ_sp_subset$Q_diff_subset), xlim = yes_range_subset, main="", col="black", lwd=2, 
+     xlab="Percent difference between Q3-size response and Q3-no size")
+
+#Class-specific graph and results
+Actinoperygii_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Actinoperygii")
+Amphibia_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Amphibia")
+Branchiopoda_subset =subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Branchiopoda")
+Insecta_subset =subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Insecta")
+Malacostraca_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Malacostraca")
+Maxillopoda_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Maxillopoda")
+Gastropoda_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Gastropoda")
+Eurotatoria_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Eurotatoria")
+Entognatha_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Entognatha")
+
+Q_diff_range_subset=c(-40,40)
+y_range_subset=c(0,.18)
+plot(density(Amphibia_subset$Q_diff_subset), xlim=Q_diff_range_subset, ylim=y_range_subset, lwd=2, main="", col="goldenrod1",  
+     xlab="Percent difference in Q3 values")
+lines(density(Branchiopoda_subset$Q_diff_subset), lwd=2, col="coral4")
+lines(density(Malacostraca_subset$Q_diff_subset),lwd=2, col="blue" )
+lines(density(Maxillopoda_subset$Q_diff_subset), lwd=2, col="grey19")
+lines(density(Insecta_subset$Q_diff_subset), lwd=2, col="magenta")
+points(Gastropoda_subset$Q_diff_subset, .1, lwd=2, col="skyblue", pch=19)
+points(Actinoperygii_subset$Q_diff_subset, .1, lwd=2, col="green", pch=19)
+points(Eurotatoria_subset$Q_diff_subset, c(.1, .1), lwd=2, col="purple", pch=19)
+points(Entognatha_subset$Q_diff_subset, .1, lwd=2, col="tomato2", pch=19)
+
+legend("topright", inset=.05, title="Line (l) or Point colors (p)",c("Actinoperygii (p)", "Amphibia (l)", 
+                                                                     "Branchiopoda (l)","Entognatha (p)", "Eurotatoria (p)","Gastropoda (p)","Insecta (l)", "Malacostraca (l)", "Maxillopoda (l)"), 
+       fill=c("green", "goldenrod1", "coral4", "tomato2", "purple", "skyblue", "magenta", "blue", "grey19" ),)
+
+Qdiff_Amphibia_subset=mean(Amphibia_subset$Q_diff_subset)
+Qdiff_Branchiopoda_subset=mean(Branchiopoda_subset$Q_diff_subset)
+Qdiff_Malacostraca_subset=mean(Malacostraca_subset$Q_diff_subset)
+Qdiff_Maxillopoda_subset=mean(Maxillopoda_subset$Q_diff_subset)
+Qdiff_Insecta_subset=mean(Insecta_subset$Q_diff_subset)
+Qdiff_Gastropoda_subset=mean(Gastropoda_subset$Q_diff_subset)
+Qdiff_Actinoperygii_subset=mean(Actinoperygii_subset$Q_diff_subset)
+Qdiff_Eurotatoria_subset=mean(Eurotatoria_subset$Q_diff_subset)
+Qdiff_Entognatha_subset=mean(Entognatha_subset$Q_diff_subset)
 
