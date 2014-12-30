@@ -649,3 +649,29 @@ Qdiff_Actinoperygii_subset=mean(Actinoperygii_subset$Q_diff_subset)
 Qdiff_Eurotatoria_subset=mean(Eurotatoria_subset$Q_diff_subset)
 Qdiff_Entognatha_subset=mean(Entognatha_subset$Q_diff_subset)
 
+
+# Compare entire data and 3* subset results figures
+compare_plot_range = c(1.12, 1.36)
+plot(density(ClassQ_sp_subset$Q3_noTSR), xlim = compare_plot_range, main="", col="dark grey", lwd=2, 
+     xlab="Q3")
+lines(density(ClassQ_sp_subset$Q3_TSR), lwd=2)
+lines(density(ClassQ_sp$Q3_noTSR, lwd=2))
+lines(density(ClassQ_sp$Q3_TSR), lwd=2)
+legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
+
+
+##-----------------------ABSOLUTE TEMPERATURE EFFECTS--------------------
+
+# Plot absolute temp and Q10 value for each individual in entire dataset and 3* subset
+plot(Q_file$temps, Q_file$Q_nochange)
+abline(lm(Q_file$Q_nochange ~ Q_file$temps))
+plot(Q_file$temps, Q_file$Q_change)
+abline(lm(Q_file$Q_change ~ Q_file$temps))
+
+plot(Q_file_subset$temps_subset, Q_file_subset$Q_nochange_subset)
+abline(lm(Q_file_subset$Q_nochange_subset ~ Q_file_subset$temps_subset))
+plot(Q_file_subset$temps_subset, Q_file_subset$Q_change_subset)
+abline(lm(Q_file_subset$Q_change_subset ~ Q_file_subset$temps_subset))
+
+
+
