@@ -459,6 +459,31 @@ theoretical_histogram$counts
 realistic_histogram = hist(empirical_mass_change_realistic$mass_reduction, breaks=3, xlim = c(0,100), ylim = c(0,200), col = "red")
 theoretical_histogram = hist(compensation_mass_data$mass_reduction, breaks=2, xlim=c(0,100), add = T, col = "blue")
 
+# Comparing empirical mass change to theoretical mass changed needed to maintain metabolic rate (i.e., compensation mass)
+
+# Took this function from another project
+get_lookup_matches = function(lookup, data_col1, data_col2, lookup_col1, lookup_col2){
+  # Get info from lookup for two-column matches between lookup and data
+  #
+  # Args: 
+  #   lookup: Dataframe that contains desired information
+  #   data_col1: First column from dataset to match
+  #   data_col2: Second column from dataset to match
+  #   lookup_col1: First column from lookup to match to data_col1
+  #   lookup_col2: Second column from lookup to match to data_col2
+  #
+  # Returns: 
+  #   Lookup information that matches dataset columns
+  dataset_info = interaction(data_col1, data_col2)
+  lookup_info = interaction(lookup_col1, lookup_col2)
+  lookup_matches = lookup[match(dataset_info, lookup_info),]
+}
+
+getting_comp = get_lookup_matches(compensation_mass_data, empirical_mass_change_realistic$studyID, empirical_mass_change_realistic$lower_temp, compensation_mass_data$rep_vector, compensation_mass_data$initial_temp)
+empirical_mass_change_realistic$mass_reduction_theory = getting_comp$mass_reduction
+empirical_mass_change_realistic$mass_red_diff = empirical_mass_change_realistic$mass_reduction - empirical_mass_change_realistic$mass_reduction_theory
+mass_reduction_comparison = hist(empirical_mass_change_realistic$mass_red_diff)
+
 
 ##-------------------Q10 CALCULATIONS ON 3* TEMP DIFF SUBSET--------------
 
@@ -651,7 +676,7 @@ Qdiff_Entognatha_subset=mean(Entognatha_subset$Q_diff_subset)
 
 
 # Compare entire data and 3* subset results figures
-compare_plot_range = c(1.12, 1.36)
+compare_plot_range = c(0.9, 1.7)
 plot(density(ClassQ_sp_subset$Q3_noTSR), xlim = compare_plot_range, main="", col="dark grey", lwd=2, 
      xlab="Q3")
 lines(density(ClassQ_sp_subset$Q3_TSR), lwd=2)
@@ -660,18 +685,30 @@ lines(density(ClassQ_sp$Q3_TSR), lwd=2)
 legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
 
 
+#### Direct (non-Q10) comparison of initial and body size change metabolic rates
+warming_subset$MTE_change_diff = 100 * (warming_subset$MTE_change_subset / warming_subset$MTE_initial_subset)
+plot(density(warming_subset$MTE_change_diff), lwd=2)
+
+
 ##-----------------------ABSOLUTE TEMPERATURE EFFECTS--------------------
 
 # Plot absolute temp and Q10 value for each individual in entire dataset and 3* subset
-plot(Q_file$temps, Q_file$Q_nochange)
-abline(lm(Q_file$Q_nochange ~ Q_file$temps))
-plot(Q_file$temps, Q_file$Q_change)
-abline(lm(Q_file$Q_change ~ Q_file$temps))
+
+# Did for entire dataset, but doesn't really work because many temp differences
+# plot(Q_file$temps, Q_file$Q_nochange)
+# abline(lm(Q_file$Q_nochange ~ Q_file$temps))
+# plot(Q_file$temps, Q_file$Q_change)
+# abline(lm(Q_file$Q_change ~ Q_file$temps))
+# 
+# min(Q_file$Q_change)
+# max(Q_file$Q_change)
 
 plot(Q_file_subset$temps_subset, Q_file_subset$Q_nochange_subset)
 abline(lm(Q_file_subset$Q_nochange_subset ~ Q_file_subset$temps_subset))
 plot(Q_file_subset$temps_subset, Q_file_subset$Q_change_subset)
 abline(lm(Q_file_subset$Q_change_subset ~ Q_file_subset$temps_subset))
 
+min(Q_file_subset$Q_change_subset)
+max(Q_file_subset$Q_change_subset)
 
 
