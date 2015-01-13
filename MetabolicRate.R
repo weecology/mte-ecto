@@ -483,6 +483,8 @@ getting_comp = get_lookup_matches(compensation_mass_data, empirical_mass_change_
 empirical_mass_change_realistic$mass_reduction_theory = getting_comp$mass_reduction
 empirical_mass_change_realistic$mass_red_diff = empirical_mass_change_realistic$mass_reduction - empirical_mass_change_realistic$mass_reduction_theory
 mass_reduction_comparison = hist(empirical_mass_change_realistic$mass_red_diff)
+plot(empirical_mass_change_realistic$higher_temp, empirical_mass_change_realistic$mass_red_diff)
+abline(lm(empirical_mass_change_realistic$mass_red_diff ~ empirical_mass_change_realistic$higher_temp))
 
 
 ##-------------------Q10 CALCULATIONS ON 3* TEMP DIFF SUBSET--------------
