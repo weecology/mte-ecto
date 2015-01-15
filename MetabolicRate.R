@@ -485,6 +485,7 @@ empirical_mass_change_realistic$mass_red_diff = empirical_mass_change_realistic$
 mass_reduction_comparison = hist(empirical_mass_change_realistic$mass_red_diff)
 plot(empirical_mass_change_realistic$higher_temp, empirical_mass_change_realistic$mass_red_diff)
 abline(lm(empirical_mass_change_realistic$mass_red_diff ~ empirical_mass_change_realistic$higher_temp))
+abline(h=0, col="red")
 
 
 ##-------------------Q10 CALCULATIONS ON 3* TEMP DIFF SUBSET--------------
@@ -626,17 +627,17 @@ num.sp.lt.15.Qdiff_subset=length(Qdiff.lt15_subset$Q_diff_subset)
 num.sp.lt205.Qdiff_subset=length(Qdiff.lt20_subset$Q_diff_subset)
 num.sp_subset=length(ClassQ_sp_subset$Q_diff_subset)
 
-#graph of TSR and no TSR distributions - all classes pooled
-yes_range_subset=range(ClassQ_sp_subset$Q3_noTSR)
-plot(density(ClassQ_sp_subset$Q3_noTSR), xlim = yes_range_subset, main="", col="dark grey", lwd=2, 
-     xlab="Q3")
-lines(density(ClassQ_sp_subset$Q3_TSR), lwd=2)
-legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
-
-#graph of percent change in Q3 - all classes pooled
-yes_range_subset=range(ClassQ_sp_subset$Q_diff_subset)
-plot(density(ClassQ_sp_subset$Q_diff_subset), xlim = yes_range_subset, main="", col="black", lwd=2, 
-     xlab="Percent difference between Q3-size response and Q3-no size")
+# #graph of TSR and no TSR distributions - all classes pooled
+# yes_range_subset=range(ClassQ_sp_subset$Q3_noTSR)
+# plot(density(ClassQ_sp_subset$Q3_noTSR), xlim = yes_range_subset, main="", col="dark grey", lwd=2, 
+#      xlab="Q3")
+# lines(density(ClassQ_sp_subset$Q3_TSR), lwd=2)
+# legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
+# 
+# #graph of percent change in Q3 - all classes pooled
+# yes_range_subset=range(ClassQ_sp_subset$Q_diff_subset)
+# plot(density(ClassQ_sp_subset$Q_diff_subset), xlim = yes_range_subset, main="", col="black", lwd=2, 
+#      xlab="Percent difference between Q3-size response and Q3-no size")
 
 #Class-specific graph and results
 Actinoperygii_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Actinoperygii")
@@ -649,23 +650,23 @@ Gastropoda_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Gastropoda
 Eurotatoria_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Eurotatoria")
 Entognatha_subset=subset(ClassQ_sp_subset, ClassQ_sp_subset$Class == "Entognatha")
 
-Q_diff_range_subset=c(-40,40)
-y_range_subset=c(0,.18)
-plot(density(Amphibia_subset$Q_diff_subset), xlim=Q_diff_range_subset, ylim=y_range_subset, lwd=2, main="", col="goldenrod1",  
-     xlab="Percent difference in Q3 values")
-lines(density(Branchiopoda_subset$Q_diff_subset), lwd=2, col="coral4")
-lines(density(Malacostraca_subset$Q_diff_subset),lwd=2, col="blue" )
-lines(density(Maxillopoda_subset$Q_diff_subset), lwd=2, col="grey19")
-lines(density(Insecta_subset$Q_diff_subset), lwd=2, col="magenta")
-points(Gastropoda_subset$Q_diff_subset, .1, lwd=2, col="skyblue", pch=19)
-points(Actinoperygii_subset$Q_diff_subset, .1, lwd=2, col="green", pch=19)
-points(Eurotatoria_subset$Q_diff_subset, c(.1, .1), lwd=2, col="purple", pch=19)
-points(Entognatha_subset$Q_diff_subset, .1, lwd=2, col="tomato2", pch=19)
-
-legend("topright", inset=.05, title="Line (l) or Point colors (p)",c("Actinoperygii (p)", "Amphibia (l)", 
-                                                                     "Branchiopoda (l)","Entognatha (p)", "Eurotatoria (p)","Gastropoda (p)","Insecta (l)", "Malacostraca (l)", "Maxillopoda (l)"), 
-       fill=c("green", "goldenrod1", "coral4", "tomato2", "purple", "skyblue", "magenta", "blue", "grey19" ),)
-
+# Q_diff_range_subset=c(-40,40)
+# y_range_subset=c(0,.18)
+# plot(density(Amphibia_subset$Q_diff_subset), xlim=Q_diff_range_subset, ylim=y_range_subset, lwd=2, main="", col="goldenrod1",  
+#      xlab="Percent difference in Q3 values")
+# lines(density(Branchiopoda_subset$Q_diff_subset), lwd=2, col="coral4")
+# lines(density(Malacostraca_subset$Q_diff_subset),lwd=2, col="blue" )
+# lines(density(Maxillopoda_subset$Q_diff_subset), lwd=2, col="grey19")
+# lines(density(Insecta_subset$Q_diff_subset), lwd=2, col="magenta")
+# points(Gastropoda_subset$Q_diff_subset, .1, lwd=2, col="skyblue", pch=19)
+# points(Actinoperygii_subset$Q_diff_subset, .1, lwd=2, col="green", pch=19)
+# points(Eurotatoria_subset$Q_diff_subset, c(.1, .1), lwd=2, col="purple", pch=19)
+# points(Entognatha_subset$Q_diff_subset, .1, lwd=2, col="tomato2", pch=19)
+# 
+# legend("topright", inset=.05, title="Line (l) or Point colors (p)",c("Actinoperygii (p)", "Amphibia (l)", 
+#                                                                      "Branchiopoda (l)","Entognatha (p)", "Eurotatoria (p)","Gastropoda (p)","Insecta (l)", "Malacostraca (l)", "Maxillopoda (l)"), 
+#        fill=c("green", "goldenrod1", "coral4", "tomato2", "purple", "skyblue", "magenta", "blue", "grey19" ),)
+# 
 Qdiff_Amphibia_subset=mean(Amphibia_subset$Q_diff_subset)
 Qdiff_Branchiopoda_subset=mean(Branchiopoda_subset$Q_diff_subset)
 Qdiff_Malacostraca_subset=mean(Malacostraca_subset$Q_diff_subset)
@@ -687,9 +688,9 @@ lines(density(ClassQ_sp$Q3_TSR), lwd=2)
 legend("topleft", inset=.05, c("Q3-no size", "Q3-size"), fill=c("grey", "black"))
 
 
-#### Direct (non-Q10) comparison of initial and body size change metabolic rates
-warming_subset$MTE_change_diff = 100 * (warming_subset$MTE_change_subset / warming_subset$MTE_initial_subset)
-plot(density(warming_subset$MTE_change_diff), lwd=2)
+# #### Direct (non-Q10) comparison of initial and body size change metabolic rates
+# warming_subset$MTE_change_diff = 100 * (warming_subset$MTE_change_subset / warming_subset$MTE_initial_subset)
+# plot(density(warming_subset$MTE_change_diff), lwd=2)
 
 
 ##-----------------------ABSOLUTE TEMPERATURE EFFECTS--------------------
@@ -705,10 +706,12 @@ plot(density(warming_subset$MTE_change_diff), lwd=2)
 # min(Q_file$Q_change)
 # max(Q_file$Q_change)
 
-plot(Q_file_subset$temps_subset, Q_file_subset$Q_nochange_subset)
+plot(Q_file_subset$temps_subset, Q_file_subset$Q_nochange_subset, ylim=c(1.0, 1.4))
 abline(lm(Q_file_subset$Q_nochange_subset ~ Q_file_subset$temps_subset))
+abline(h=1, col="red")
 plot(Q_file_subset$temps_subset, Q_file_subset$Q_change_subset)
 abline(lm(Q_file_subset$Q_change_subset ~ Q_file_subset$temps_subset))
+abline(h=1, col="red")
 
 min(Q_file_subset$Q_change_subset)
 max(Q_file_subset$Q_change_subset)
