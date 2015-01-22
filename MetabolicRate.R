@@ -5,7 +5,8 @@
 ### This section uses metabolic rate, temperature, and size data to calculated fitted exponent and activation
 ### energy for the taxonomic classes for which we could find data. 
 
-##-----------------------------ANALYSES WITH MAKRIEVA DATA FOR Branchiopoda Malacostraca and Maxillopoda---------------
+# Classes: Branchiopoda, Malacostraca, Maxillopoda
+# Data source: Makrieva
 MR_data = read.csv("Class_metabolicrates_Makrievadata.csv", stringsAsFactors = FALSE)
 Class_list=unique(MR_data$Class)
 InvK=1/(273.15+MR_data$TC) #getting all the units correct
@@ -24,7 +25,8 @@ for (current_class in Class_list){
   class_slopes=rbind(class_slopes, c(current_class, Mslope, Tslope, Ea))
 }
 
-##-----------------------------ANALYSES WITH WHITE DATA FOR AMPHIBIANS--------------------------------------------
+# Classes: Amphibia
+# Data source: White
 MR_Amphi = read.csv("Whiteetal_Amphibiandata.csv", stringsAsFactors = FALSE)
 A_InvK=1/(273.15+MR_Amphi$TC)
 A_Mkg=MR_Amphi$Mg/1000
@@ -36,8 +38,8 @@ Ea=Tslope*0.00008617
 class_slopes=rbind(class_slopes, c("Amphibia", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
-##-----------------------------ANALYSES WITH GILLOOLY DATA FOR FISH-----------------------------------------------
-
+# Classes: Actinoperygii
+# Data source: Gillooly
 #obtaining super-class-specific exponents for metabolic rate scaling in fish
 MR_fish = read.csv("gillooly_fish.csv", stringsAsFactors = FALSE)
 f_Mkg=MR_fish$Mg/1000
@@ -49,15 +51,15 @@ Ea=Tslope*0.00008617
 class_slopes=rbind(class_slopes, c("Actinoperygii", Mslope, Tslope, Ea))
 class_slopes=as.data.frame(class_slopes, stringsAsFactors = FALSE)
 
-##----------------CLEANING UP DATAFRAME WITH CLASS-SPECIFIC PARAMETERS FOR METABOLIC EQUATION------------------------
-
 #removing unneccesary column and renaming columns
 class_values=class_slopes[c(-3)]
 names(class_values)[names(class_values) == "V1"] = "Class"
 names(class_values)[names(class_values) == "log(Class_data$Mg)"] = "exponent"
 names(class_values)[names(class_values) == "Class_data$InvK"] = "Ea"
 
-##---------------ADDING Insecta VALUES FROM CHOWN AND THEORY VALUES FOR REMAINING CLASSES------------------------------
+# Classes: Insecta, Gastropoda, Eurotatoria, Entognatha
+# Data source (Insecta only): Chown
+# Remaining classes' values from theory
 I_class="Insecta"
 other_class=c("Gastropoda","Eurotatoria", "Entognatha")
 I_slope=0.75
@@ -76,11 +78,38 @@ names(other_values)[names(other_values) == "I_Ea"] = "Ea"
 class_values=rbind(class_values, other_values)
 class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.numeric(Ea))
 
-#----------------------Q10 CALCULATIONS---------------------------------------
+#---------------------THREE DEGREE SUBSET DATASET----------------------------
+# Read in compiled experimental dataset
+original_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 
-TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
-#stringsAsFactors prevents R from reading strings as factors, which mucks up further analysis
-#must re-encode data to properly read in data file
+# Turn unique row names into column in original dataset
+original_data = data.frame(as.numeric(rownames(original_data)), original_data)
+colnames(original_data)[1] = "row_names"
+
+# Create list of experiment names
+replicate_list=unique(original_data$studyID)
+
+# Create dataset containing all temperature pairs within each replicate
+all_pairs = c()
+for(current_replicate in replicate_list){
+  single_replicate = subset(original_data, original_data$studyID == current_replicate)
+  single_replicate_rownames_combos = combn(single_replicate$row_names, 2)
+  single_replicate_rownames_combos = t(single_replicate_rownames_combos)
+  single_replicate_temps_combos = combn(single_replicate$temp, 2)
+  single_replicate_temps_combos = t(single_replicate_temps_combos)
+  single_replicate_masses_combos = combn(single_replicate$mass, 2)
+  single_replicate_masses_combos = t(single_replicate_masses_combos)
+  single_replicate_combos = cbind(single_replicate_rownames_combos, single_replicate_temps_combos, single_replicate_masses_combos)
+  single_replicate_combos = data.frame(single_replicate_combos)
+  single_replicate_combos = cbind(current_replicate, single_replicate_combos)
+  all_pairs = rbind(all_pairs, single_replicate_combos)
+}
+names(all_pairs) = c("studyID", "lower_temp_row", "higher_temp_row", "lower_temp", "higher_temp", "lower_temp_mass", "higher_temp_mass")
+
+# Subset dataset to contain only temperature pairs that differ by 3*
+all_pairs$temp_diff = all_pairs$higher_temp - all_pairs$lower_temp
+three_degree_data = subset(all_pairs, all_pairs$temp_diff == 3)
+
 
 ##-------------------EXTRACTING SPECIES AND REPLICATE INFO--------------------
 
@@ -89,7 +118,6 @@ TSD_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding =
 ### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". This 
 ### section of code extracts information so that each replicate can be analyzed separately
 
-replicate=unique(TSD_data$studyID)
 rep_linker=c()
 
 #extracting species and replicate info
@@ -411,35 +439,6 @@ hist(high_temp_diff$mass_reduction, xlim = c(0,100))
 
 
 ##-------------EMPIRICAL MASS CHANGES FOR REALISTIC TEMP CHANGES--------------
-
-# Calculate mass reduction for as many realistic temperature changes (i.e., 3*) 
-# as there are in all of the replicates to determine what magnitude of mass change
-# is realistic
-
-# Turn unique row names into column in original dataset
-TSD_data = data.frame(as.numeric(rownames(TSD_data)), TSD_data)
-colnames(TSD_data)[1] = "row_names"
-
-# Find all temperatures pairs, with unique identifiers, that differ by 3 degrees in each replicate
-all_combinations = c()
-for(current_replicate in replicate){
-  single_replicate = subset(TSD_data, TSD_data$studyID == current_replicate)
-  single_replicate_rownames_combos = combn(single_replicate$row_names, 2)
-  single_replicate_rownames_combos = t(single_replicate_rownames_combos)
-  single_replicate_temps_combos = combn(single_replicate$temp, 2)
-  single_replicate_temps_combos = t(single_replicate_temps_combos)
-  single_replicate_masses_combos = combn(single_replicate$mass, 2)
-  single_replicate_masses_combos = t(single_replicate_masses_combos)
-  single_replicate_combos = cbind(single_replicate_rownames_combos, single_replicate_temps_combos, single_replicate_masses_combos)
-  single_replicate_combos = data.frame(single_replicate_combos)
-  single_replicate_combos = cbind(current_replicate, single_replicate_combos)
-  all_combinations = rbind(all_combinations, single_replicate_combos)
-}
-
-# Remove temperature pairs that differ by anything other than 3*
-names(all_combinations) = c("studyID", "row_name_1", "row_name_2", "lower_temp", "higher_temp", "lower_temp_mass", "higher_temp_mass")
-all_combinations$temp_diff = all_combinations$higher_temp - all_combinations$lower_temp
-empirical_mass_change_realistic = subset(all_combinations, all_combinations$temp_diff == 3)
 
 # Calculate mass reduction for realistic temperature change (i.e., 3*), replacing values over 100 w/ NA
 empirical_mass_change_realistic$mass_reduction = (empirical_mass_change_realistic$higher_temp_mass / empirical_mass_change_realistic$lower_temp_mass) * 100
