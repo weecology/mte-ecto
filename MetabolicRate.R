@@ -79,14 +79,14 @@ class_values=rbind(class_values, other_values)
 class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.numeric(Ea))
 
 #---------------------THREE DEGREE SUBSET DATASET----------------------------
-# Read in compiled experimental dataset
+# Read in compiled experimental dataset, has one temperature and replicate per row
 original_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 
 # Turn unique row names into column in original dataset
 original_data = data.frame(as.numeric(rownames(original_data)), original_data)
 colnames(original_data)[1] = "row_names"
 
-# Create list of experiment names
+# Create list of experiment names and respective species
 replicate_list=unique(original_data$studyID)
 
 # Create dataset containing all temperature pairs within each replicate
@@ -108,8 +108,25 @@ names(all_pairs) = c("studyID", "lower_temp_row", "higher_temp_row", "lower_temp
 
 # Subset dataset to contain only temperature pairs that differ by 3*
 all_pairs$temp_diff = all_pairs$higher_temp - all_pairs$lower_temp
-three_degree_data = subset(all_pairs, all_pairs$temp_diff == 3)
+three_degree_pairs = subset(all_pairs, all_pairs$temp_diff == 3)
 
+# Add species to three degree difference pairs
+lookup = original_data[match(three_degree_pairs$studyID, original_data$studyID),]
+three_degree_pairs$species = lookup$Species
+
+# List of species and number of pairs per species
+species_duplicates = sort(table(three_degree_pairs$species), decreasing=TRUE)
+
+# Use row names for 3* difference pairs to create dataset where each row has 
+# one temperature and replicate
+three_degree_rows = c(three_degree_pairs$lower_temp_row, three_degree_pairs$higher_temp_row)
+three_degree_rows = sort(unique(three_degree_rows))
+
+three_degree_data = c()
+for (current_row in three_degree_rows){
+  row_data = subset(original_data, original_data$row_names == current_row)
+  three_degree_data = rbind(three_degree_data, row_data)
+}
 
 ##-------------------EXTRACTING SPECIES AND REPLICATE INFO--------------------
 
