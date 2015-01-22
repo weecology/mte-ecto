@@ -78,7 +78,7 @@ names(other_values)[names(other_values) == "I_Ea"] = "Ea"
 class_values=rbind(class_values, other_values)
 class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.numeric(Ea))
 
-#---------------------THREE DEGREE SUBSET DATASET----------------------------
+#---------------------CREATE THREE DEGREE DATASET----------------------------
 # Read in compiled experimental dataset, has one temperature and replicate per row
 original_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 
@@ -135,40 +135,44 @@ for (current_row in three_degree_rows){
 ### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". This 
 ### section of code extracts information so that each replicate can be analyzed separately
 
-rep_linker=c()
+replicate_info=c()
 
 #extracting species and replicate info
-for (current_replicate in replicate){
-  replicate_data = subset(TSD_data, TSD_data$studyID == current_replicate)
-  replicate_species= unique(replicate_data$Species)
-  replicate_class=unique(replicate_data$Class)
-  rep_linker=rbind(rep_linker, c(current_replicate, replicate_species, replicate_class))
+for (current_replicate in replicate_list){
+  replicate_data = subset(three_degree_data, three_degree_data$studyID == current_replicate)
+  replicate_species = unique(replicate_data$Species)
+  replicate_class = unique(replicate_data$Class)
+  replicate_info = rbind(replicate_info, c(current_replicate, replicate_species, replicate_class))
 }
-rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
-#write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
-class_uniquereplicate=unique(rep_linker_sort[,1])
 
-##---------------------------CALCULATING METABOLIC RATES FOR TEMPERATURE/SIZE COMBOS FROM DATA----------------------
+# Unnecessary?
+#rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
+#write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
+
+# This is the same exact thing as replicate_list
+#class_uniquereplicate=unique(rep_linker_sort[,1])
+
+##-----------CALCULATING METABOLIC RATES FOR TEMPERATURE/SIZE COMBOS FROM DATA------------
 
 ### This section pulls out the size-temperature data and metabolic rate parameters for a specific taxonomic class
 ### It extracts the data from a unique replicate. FOr that replicate it uses the size-temperature data to calculates 
 ### metabolic rates for the following cases: 1) no size change as temperature increases, 2) size and temperature increase
 ### as observed in the data. 
 
-MTE_allreps=c()
+MTE_allreps = c()
 #unused empty vector?
-MTE_allcompare=c()
-Classes_all=unique(TSD_data$Class)
+MTE_allcompare =c()
+Classes_all = unique(three_degree_data$Class)
 
 for (index_class in Classes_all){
-  class_TSD= subset(TSD_data, TSD_data$Class == index_class)
-  class_MTE= subset(class_values1, class_values1$Class == index_class)
-  class_replicate=unique(class_TSD$studyID)
+  class_TSD = subset(three_degree_data, three_degree_data$Class == index_class)
+  class_MTE = subset(class_values1, class_values1$Class == index_class)
+  class_replicate = unique(class_TSD$studyID)
     
     for (index_replicate in class_replicate){
-      MTE_repdata=c()
-      current_data= subset (class_TSD, class_TSD$studyID == index_replicate)
-      temps=unique(current_data$temp)
+      MTE_repdata = c()
+      current_data = subset (class_TSD, class_TSD$studyID == index_replicate)
+      temps = unique(current_data$temp)
  
         for (current_temp in temps){
           min_mass=current_data$mass[current_data$temp==current_temp]
@@ -186,9 +190,9 @@ for (index_class in Classes_all){
      }
 }
 
-temp_diff=MTE_allreps$temps-MTE_allreps$Tmin_vector
-MTE_allreps=cbind(MTE_allreps, temp_diff)
-warming= subset (MTE_allreps, MTE_allreps$temp_diff > 0) #cleans out decreasing temperature situations
+MTE_allreps$temp_diff = MTE_allreps$temps-MTE_allreps$Tmin_vector
+#MTE_allreps=cbind(MTE_allreps, temp_diff)
+warming = subset(MTE_allreps, MTE_allreps$temp_diff == 3) #cleans out decreasing temperature situations
 
 ##-----------------CALCULATING AVG REPLICATE Q3 FOR THE GENERATED TEMPERATURE-METABOLIC RATE DATA------------------
 
