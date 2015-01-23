@@ -79,6 +79,10 @@ class_values=rbind(class_values, other_values)
 class_values1= transform(class_values, exponent = as.numeric(exponent), Ea = as.numeric(Ea))
 
 #---------------------CREATE THREE DEGREE DATASET----------------------------
+### Within a scientific paper, the body size-temperature study may have replicated
+### experiments or have slightly different experiments that were conducted. Each experiment
+### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". 
+
 # Read in compiled experimental dataset, has one temperature and replicate per row
 original_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
 
@@ -87,11 +91,11 @@ original_data = data.frame(as.numeric(rownames(original_data)), original_data)
 colnames(original_data)[1] = "row_names"
 
 # Create list of experiment names and respective species
-replicate_list=unique(original_data$studyID)
+replicate_list_original=unique(original_data$studyID)
 
 # Create dataset containing all temperature pairs within each replicate
 all_pairs = c()
-for(current_replicate in replicate_list){
+for(current_replicate in replicate_list_original){
   single_replicate = subset(original_data, original_data$studyID == current_replicate)
   single_replicate_rownames_combos = combn(single_replicate$row_names, 2)
   single_replicate_rownames_combos = t(single_replicate_rownames_combos)
@@ -128,29 +132,17 @@ for (current_row in three_degree_rows){
   three_degree_data = rbind(three_degree_data, row_data)
 }
 
-##-------------------EXTRACTING SPECIES AND REPLICATE INFO--------------------
+# Create list of experiment names and respective species
+replicate_list = unique(three_degree_data$studyID)
 
-### Within a scientific paper, the body size-temperature study may have replicated
-### experiments or have slightly different experiments that were conducted. Each experiment
-### is called a replicate and was given a unique identifier in "MTEEcto_data.csv". This 
-### section of code extracts information so that each replicate can be analyzed separately
-
-replicate_info=c()
-
-#extracting species and replicate info
+#List of replicates with respective species and classes
+replicate_info = c()
 for (current_replicate in replicate_list){
   replicate_data = subset(three_degree_data, three_degree_data$studyID == current_replicate)
   replicate_species = unique(replicate_data$Species)
   replicate_class = unique(replicate_data$Class)
   replicate_info = rbind(replicate_info, c(current_replicate, replicate_species, replicate_class))
 }
-
-# Unnecessary?
-#rep_linker_sort= rep_linker[order(rep_linker[,2], rep_linker[,1]),]
-#write.table(rep_linker_sort, file = "rep_linker.csv", sep = ",", col.names = TRUE)
-
-# This is the same exact thing as replicate_list
-#class_uniquereplicate=unique(rep_linker_sort[,1])
 
 ##-----------CALCULATING METABOLIC RATES FOR TEMPERATURE/SIZE COMBOS FROM DATA------------
 
@@ -190,69 +182,56 @@ for (index_class in Classes_all){
      }
 }
 
+# Limit to 3* difference pairs
 MTE_allreps$temp_diff = MTE_allreps$temps-MTE_allreps$Tmin_vector
-#MTE_allreps=cbind(MTE_allreps, temp_diff)
-warming = subset(MTE_allreps, MTE_allreps$temp_diff == 3) #cleans out decreasing temperature situations
+metabolic_rates = subset(MTE_allreps, MTE_allreps$temp_diff == 3) 
 
-##-----------------CALCULATING AVG REPLICATE Q3 FOR THE GENERATED TEMPERATURE-METABOLIC RATE DATA------------------
+##------------------------Analysis 1: Q10 CALCULATIONS--------------------------
 
-### Using the temperature-metabolic rate data generated above and stored in the dataframe 'warming'
-### to calculate an average Q3 value for each replicate
+### Use temperatures and metabolic rates to determine Q10 values for body size change
+### and no body size change for each temperature/replicate combination, then replicate
+### average and species average
 
-#change 4*C change to 3*C change
-
-Q_nochange=(warming$MTE_nochange/warming$MTE_initial)^(3/warming$temp_diff)
-Q_change=(warming$MTE_change/warming$MTE_initial)^(3/warming$temp_diff) 
+# Individual Q10s
+Q_nochange=(metabolic_rates$MTE_nochange/metabolic_rates$MTE_initial)^(3/metabolic_rates$temp_diff)
+Q_change=(metabolic_rates$MTE_change/metabolic_rates$MTE_initial)^(3/metabolic_rates$temp_diff) 
 Q_diff=100*((Q_change/Q_nochange)-1)
 
-Q_file=c()
-Q_file=cbind(warming, Q_nochange, Q_change, Q_diff)
-#write.table(Q_file, file = "ClassQ_file.csv", sep = ",", col.names = TRUE)
-#END RAW DATAFILE CREATION
+Q_individual=c()
+Q_individual=cbind(metabolic_rates, Q_nochange, Q_change, Q_diff)
 
-#Average Q for each study
-rep_avgs=c()
-for (unique_rep in class_uniquereplicate){
-  rep_subset= subset (Q_file, Q_file$rep_vector == unique_rep) 
-  #sp_name= rep_linker_sort[,2][ which (rep_linker_sort[,1] == unique_rep),]
-  sp_name= subset(rep_linker_sort, rep_linker_sort[,1] == unique_rep,)
-  avg_Q_nochange=mean(rep_subset$Q_nochange)
-  avg_Q_change=mean(rep_subset$Q_change)
-  rep_avgs=rbind(rep_avgs, c(unique_rep, avg_Q_nochange,avg_Q_change, sp_name))
+# Replicate average Q10
+Q_replicate=c()
+for (unique_rep in replicate_list){
+  rep_subset = subset(Q_individual, Q_individual$rep_vector == unique_rep) 
+  sp_name = subset(replicate_info, replicate_info[,1] == unique_rep,)
+  avg_Q_nochange = mean(rep_subset$Q_nochange)
+  avg_Q_change = mean(rep_subset$Q_change)
+  Q_replicate = rbind(Q_replicate, c(avg_Q_nochange,avg_Q_change, sp_name))
 }
- rep_avgs_1=  as.data.frame(rep_avgs, stringsAsFactors = FALSE)
- rep_avgs_2= transform(rep_avgs_1, V2 = as.numeric(V2), V3 = as.numeric(V3))
-write.table(rep_avgs_2, file = "class_rep_avgs_2.csv", sep = ",", col.names = TRUE)
 
+Q_replicate = as.data.frame(Q_replicate, stringsAsFactors = FALSE)
+colnames(Q_replicate) = c("Q_nochange", "Q_change", "studyID", "species", "class")
+Q_replicate = transform(Q_replicate, Q_nochange = as.numeric(Q_nochange), Q_change = as.numeric(Q_change))
 
-##---------------------------AVERAGE Q3 FOR EACH SPECIES-------------------------------------------
-
-### If more than one replicate for a species, calculates an average across the replciates so that
-### each species only has one resulting datapoint
-
-Q_1=c()
-species=unique(rep_avgs_2$V5)
+# Species average Q10
+Q_species=c()
+species=unique(Q_replicate$species)
 for (current_sp in species){
-  sp_subset= subset (rep_avgs_2, rep_avgs_2$V5 == current_sp) 
-  sp_class=unique(sp_subset[,6])
-  sp_Q_nochange=mean(sp_subset[,2])
-  sp_Q_change=mean(sp_subset[,3])
-  Q_1=rbind(Q_1, c(current_sp, sp_class, sp_Q_nochange, sp_Q_change))
+  sp_subset = subset(Q_replicate, Q_replicate$species == current_sp) 
+  sp_class = unique(sp_subset$class)
+  sp_Q_nochange = mean(sp_subset$Q_nochange)
+  sp_Q_change = mean(sp_subset$Q_change)
+  Q_species = rbind(Q_species, c(sp_Q_nochange, sp_Q_change, current_sp, sp_class))
 }
 
-Q_2=  as.data.frame(Q_1, stringsAsFactors = FALSE)
-Q_sp= transform(Q_2, V3 = as.numeric(V3), V4 = as.numeric(V4))
-Q_diff=100*((Q_sp$V4/Q_sp$V3)-1)
-ClassQ_sp=cbind(Q_sp, Q_diff)
-ClassQ_sp=ClassQ_sp[order(ClassQ_sp[,2], ClassQ_sp[,1]),]
-ClassQ_sp=  as.data.frame(ClassQ_sp, stringsAsFactors = FALSE)
+Q_species = as.data.frame(Q_species, stringsAsFactors = FALSE)
+colnames(Q_species) = c("Q_nochange", "Q_change", "species", "class")
+Q_species = transform(Q_species, Q_nochange = as.numeric(Q_nochange), Q_change = as.numeric(Q_change))
 
-names(ClassQ_sp)[names(ClassQ_sp) == "V1"] = "Species"
-names(ClassQ_sp)[names(ClassQ_sp) == "V2"] = "Class"
-names(ClassQ_sp)[names(ClassQ_sp) == "V3"] = "Q3_noTSR"
-names(ClassQ_sp)[names(ClassQ_sp) == "V4"] = "Q3_TSR"
-ClassQ_sp= transform(ClassQ_sp, Q_diff = as.numeric(Q_diff))
-write.table(ClassQ_sp, file = "ClassQ_sp.csv", sep = ",", col.names = TRUE)
+Q_species$Q_diff = ((Q_species$Q_change / Q_species$Q_nochange) - 1) * 100
+Q_species = transform(Q_species, Q_diff = as.numeric(Q_diff))
+Q_species = Q_species[order(Q_species$Q_change, Q_species$Q_nochange),]
 
 #-------------------------SUMMARY STATS AND GRAPHS -------------------------
 mean_Q3noTSR=mean(ClassQ_sp$Q3_noTSR)
