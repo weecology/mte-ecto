@@ -235,22 +235,43 @@ Q_species = Q_species[order(Q_species$Q_change, Q_species$Q_nochange),]
 
 ### Summary stats and figures
 
-# Average Q10 values
+# For all three degree difference pairs (i.e., individual), comparing initial, 
+# no change, and change metabolic rates using 1:1 line
+
+plot(log(Q_individual$MTE_initial), log(Q_individual$MTE_nochange))
+lines(x = c(-40, 0), y = c(-40, 0))
+
+plot(log(Q_individual$MTE_initial), log(Q_individual$MTE_change))
+lines(x = c(-40, 0), y = c(-40, 0))
+
+plot(log(Q_individual$MTE_change), log(Q_individual$MTE_nochange))
+lines(x = c(-40, 0), y = c(-40, 0))
+
+# Same thing but for Q10 values for species
+plot(Q_species$Q_nochange, Q_species$Q_change)
+lines(x = c(1, 2), y = c(1, 2))
+
+
+# Average Q10 values across species
 mean_Q_nochange = mean(Q_species$Q_nochange)
 mean_Q_change = mean(Q_species$Q_change)
 mean_Q_diff = mean(Q_species$Q_diff)
 
-# Q10 t-test across classes
+# Q10 t-test across species
 ttest_Q = t.test(Q_species$Q_nochange, Q_species$Q_change, paired = TRUE)
 
 # Q10 change and no change distributions across classes
 Q_comparison = plot(density(Q_species$Q_nochange), main = "", xlab = "Q10 values",
-                    ylab = "Q10 density")
+                    ylab = "Q10 density", xlim = c(0.6, 1.4))
 lines(density(Q_species$Q_change), lty = 2)
+lines(density(Q_individual$Q_nochange), col = "red")
+lines(density(Q_individual$Q_change), col = "red")
+abline(v = 1)
 legend("topleft", inset=.05, c("Q3 no change", "Q3 change"), lty = c(1, 2))
 
-# Q10 change and no change percent difference figure
-Q_percent_diff = plot(density(Q_species$Q_diff), main = "", xlab = "Q10 percent differences")
+# Q10 change and no change percent difference figures
+Q_diff_individual = plot(density(Q_individual$Q_diff), main = "", xlab = "Q10 percent differences")
+Q_diff_species = plot(density(Q_species$Q_diff), main = "", xlab = "Q10 percent differences")
 
 # Subset by class
 Actinoperygii = subset(Q_species, Q_species$class == "Actinoperygii")
