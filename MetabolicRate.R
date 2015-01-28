@@ -233,7 +233,7 @@ Q_species$Q_diff = ((Q_species$Q_change / Q_species$Q_nochange) - 1) * 100
 Q_species = transform(Q_species, Q_diff = as.numeric(Q_diff))
 Q_species = Q_species[order(Q_species$Q_change, Q_species$Q_nochange),]
 
-### Summary stats and figures
+### Summary stats and figures for metabolic rates
 
 # For all three degree difference pairs (i.e., individual), comparing initial, 
 # no change, and change metabolic rates using 1:1 line
@@ -251,6 +251,51 @@ lines(x = c(-40, 0), y = c(-40, 0))
 plot(Q_species$Q_nochange, Q_species$Q_change)
 lines(x = c(1, 2), y = c(1, 2))
 
+# Boxplot to show difference among initial, no change, and change metabolic rates
+# for all three degree difference pairs (i.e., individual)
+boxplot(x = cbind(log(Q_individual$MTE_initial), log(Q_individual$MTE_change), log(Q_individual$MTE_nochange)))
+
+# Graphing 1:1 for percent difference for individual metabolic rates
+
+# diff1 = ((Q_individual$MTE_initial / Q_individual$MTE_change) - 1) * 100
+# hist(diff1)
+# 
+# diff2 = ((Q_individual$MTE_initial / Q_individual$MTE_nochange) - 1) * 100
+# hist(diff2)
+# 
+# diff3 = ((Q_individual$MTE_change / Q_individual$MTE_nochange) - 1) * 100
+# hist(diff3)
+# 
+# plot(diff2, diff1)
+# lines(x = c(-50, 50), y = c(-50, 50))
+# 
+# plot(diff1)
+# points(diff2, col = "red")
+# points(diff3, col = "green")
+# abline(h = 0)
+
+diff4 = ((Q_individual$MTE_change / Q_individual$MTE_initial) - 1) * 100
+#hist(diff4)
+
+diff5 = ((Q_individual$MTE_nochange / Q_individual$MTE_initial) - 1) * 100
+#hist(diff5)
+
+plot(diff4)
+points(diff5, col = "red")
+abline(h = 0)
+
+diff6 = ((Q_individual$MTE_nochange / Q_individual$MTE_change) - 1) * 100
+#hist(diff6)
+
+plot(diff6)
+abline(h = 0)
+
+# T test to compare metabolic rates for individual
+ttest_in_no = t.test(Q_individual$MTE_initial, Q_individual$MTE_nochange, paired = TRUE)
+ttest_in_cha = t.test(Q_individual$MTE_initial, Q_individual$MTE_change, paired = TRUE)
+ttest_no_cha = t.test(Q_individual$MTE_nochange, Q_individual$MTE_change, paired = TRUE)
+
+### Summary stats and figures for Q10 values
 
 # Average Q10 values across species
 mean_Q_nochange = mean(Q_species$Q_nochange)
