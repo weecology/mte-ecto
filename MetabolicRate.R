@@ -117,9 +117,21 @@ three_degree_pairs = subset(all_pairs, all_pairs$temp_diff == 3)
 # Add species to three degree difference pairs
 lookup = original_data[match(three_degree_pairs$studyID, original_data$studyID),]
 three_degree_pairs$species = lookup$Species
-three_degree_pairs$class = lookup$Class
+three_degree_pairs$Class = lookup$Class
 
 # List of species and number of pairs per species
 species_duplicates = sort(table(three_degree_pairs$species), decreasing=TRUE)
 
+# Add class-specific values to pairs dataset
+store_class_values = class_values[match(three_degree_pairs$Class, class_values$Class),]
+three_degree_pairs = cbind(three_degree_pairs, store_class_values$exponent, store_class_values$Ea)
+colnames(three_degree_pairs)[11] = "exponent"
+colnames(three_degree_pairs)[12] = "Ea"
+
+#------------------CALCULATE METABOLIC RATES--------------------------
+
+# Use MTE equation to calculate metabolic rates
+three_degree_pairs$initial_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$initial_temp + 273.15)))))
+three_degree_pairs$final_metrate = (three_degree_pairs$final_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
+three_degree_pairs$constantmass_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
 
