@@ -128,10 +128,64 @@ three_degree_pairs = cbind(three_degree_pairs, store_class_values$exponent, stor
 colnames(three_degree_pairs)[11] = "exponent"
 colnames(three_degree_pairs)[12] = "Ea"
 
-#------------------CALCULATE METABOLIC RATES--------------------------
+#------------------CALCULATE METABOLIC RATES/MASSES--------------------------
 
-# Use MTE equation to calculate metabolic rates
+# Use MTE equation to calculate metabolic rates (initial, final, and w/ constant/initial mass)
 three_degree_pairs$initial_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$initial_temp + 273.15)))))
 three_degree_pairs$final_metrate = (three_degree_pairs$final_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
 three_degree_pairs$constantmass_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
 
+# Use rearranged MTE equation to calculate mass w/ constant/initial metabolic rate
+three_degree_pairs$constantmetrate_mass = (three_degree_pairs$initial_metrate / (exp(three_degree_pairs$Ea / (.00008617 * (three_degree_pairs$final_temp + 273.15))))) ^ (1 / three_degree_pairs$exponent)
+
+# Arrange dataset according to class
+three_degree_pairs = three_degree_pairs[with(three_degree_pairs, order(Class)), ]
+
+#--------------------EXPLORATORY STATS AND FIGURES-----------------------
+
+### Summary values
+
+# Percent differences for metabolic rates
+  # 1: initial to final (empirical), expect increase
+  # 2: initial to constant mass (theoretical), expect increase
+  # 3: final to constant mass, expect increase
+
+percent_diff1 = ((three_degree_pairs$final_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+percent_diff2 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+percent_diff3 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$final_metrate) - 1) * 100
+
+# Percent differences for masses
+  # 4: initial to final (empirical), expect decrease
+  # 5: initial to constant metabolic rate (theoretical), expect decrease
+  # 6: final to constant metabolic rate, expect decrease
+
+percent_diff4 = ((three_degree_pairs$final_mass / three_degree_pairs$initial_mass) - 1) * 100
+percent_diff5 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$initial_mass) - 1) * 100
+percent_diff6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
+
+### Statistical tests
+
+
+### Figures
+
+# Histogram of all metabolic rates
+hist(log(three_degree_pairs$initial_metrate))
+hist(log(three_degree_pairs$final_metrate), col = rgb(0, 0, 1, 0.5), add = T)
+hist(log(three_degree_pairs$constantmass_metrate), col = rgb(1, 0, 0, 0.5), add = T)
+
+# Histogram of all mass values
+hist(log(three_degree_pairs$initial_mass))
+hist(log(three_degree_pairs$final_mass), col = rgb(0, 0, 1, 0.5), add = T)
+hist(log(three_degree_pairs$constantmetrate_mass), col = rgb(1, 0, 0, 0.5), add = T)
+
+# Barplot of percent differences for metabolic rates; expect 0 < diff3 < diff1 < diff2
+barplot(percent_diff2, col = rgb(0, 0, 1, 0.5))
+barplot(percent_diff1, add = T)
+barplot(percent_diff3, col = rgb(1, 0, 0, 0.5), add = T)
+
+# Barplot of percent differences for masses
+barplot(percent_diff5, col = rgb(0, 0, 1, 0.5))
+barplot(percent_diff4, add = T)
+barplot(percent_diff6, col = rgb(1, 0, 0, 0.5))
+
+#-----------------------------ABSOLUTE TEMP-------------------------------
