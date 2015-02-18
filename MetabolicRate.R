@@ -164,6 +164,48 @@ three_degree_pairs$PD_6 = ((three_degree_pairs$constantmetrate_mass / three_degr
 
 ### Figures
 
+# Regression + ANOVA: initial and constant mass
+plot(log(three_degree_pairs$initial_mass), log(three_degree_pairs$initial_metrate), col = "blue")
+linreg1 = lm(log(three_degree_pairs$initial_metrate) ~ log(three_degree_pairs$initial_mass))
+print(summary(linreg1))
+abline(linreg1, col = "blue")
+points(log(three_degree_pairs$initial_mass), log(three_degree_pairs$constantmass_metrate), col = "red")
+linreg2 = lm(log(three_degree_pairs$constantmass_metrate) ~ log(three_degree_pairs$initial_mass))
+print(summary(linreg2))
+abline(linreg2, col = "red")
+
+# Regression + ANOVA: initial and final
+plot(log(three_degree_pairs$initial_mass), log(three_degree_pairs$initial_metrate), col = "blue")
+linreg3 = lm(log(three_degree_pairs$initial_metrate) ~ log(three_degree_pairs$initial_mass))
+print(summary(linreg3))
+abline(linreg3, col = "blue")
+points(log(three_degree_pairs$final_mass), log(three_degree_pairs$final_metrate), col = "red")
+linreg4 = lm(log(three_degree_pairs$final_metrate) ~ log(three_degree_pairs$final_mass))
+print(summary(linreg4))
+abline(linreg4, col = "red")
+
+# Regression + ANOVA: initial and constant metabolic rate
+plot(log(three_degree_pairs$initial_metrate), log(three_degree_pairs$initial_mass), col = "blue")
+linreg5 = lm(log(three_degree_pairs$initial_mass) ~ log(three_degree_pairs$initial_metrate))
+print(summary(linreg5))
+abline(linreg5, col = "blue")
+points(log(three_degree_pairs$initial_metrate), log(three_degree_pairs$constantmetrate_mass), col = "red")
+linreg6 = lm(log(three_degree_pairs$constantmetrate_mass) ~ log(three_degree_pairs$initial_metrate))
+print(summary(linreg6))
+abline(linreg6, col = "red")
+
+# Density plots for t-test for metabolic rate + normality test
+plot(density(three_degree_pairs$PD_1), col = "purple")
+lines(density(three_degree_pairs$PD_2), col = "orange")
+shapiro.test(three_degree_pairs$PD_1)
+shapiro.test(three_degree_pairs$PD_2)
+
+# Density plots for t-test for mass + normality test
+plot(density(three_degree_pairs$PD_4), col = "purple")
+lines(density(three_degree_pairs$PD_5), col = "orange")
+shapiro.test(three_degree_pairs$PD_4)
+shapiro.test(three_degree_pairs$PD_5)
+
 # Density plot of metabolic rates, log-transformed
 plot(density(log(three_degree_pairs$initial_metrate)), col = "orange", main = "", 
      xlab = "log(metabolic rate value)", ylab = "metabolic rate density")
