@@ -149,33 +149,33 @@ three_degree_pairs$constantmetrate_mass = (three_degree_pairs$initial_metrate / 
   # 1: initial to final (empirical), expect increase
   # 2: initial to constant mass (theoretical), expect increase
   # 3: final to constant mass, expect increase
-percent_diff1 = ((three_degree_pairs$final_metrate / three_degree_pairs$initial_metrate) - 1) * 100
-percent_diff2 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$initial_metrate) - 1) * 100
-percent_diff3 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$final_metrate) - 1) * 100
+three_degree_pairs$PD_1 = ((three_degree_pairs$final_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+three_degree_pairs$PD_2 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+three_degree_pairs$PD_3 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$final_metrate) - 1) * 100
 
 # Percent differences for masses
   # 4: initial to final (empirical), expect decrease
   # 5: initial to constant metabolic rate (theoretical), expect decrease
   # 6: final to constant metabolic rate, expect decrease
-percent_diff4 = ((three_degree_pairs$final_mass / three_degree_pairs$initial_mass) - 1) * 100
-percent_diff5 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$initial_mass) - 1) * 100
-percent_diff6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
+three_degree_pairs$PD_4 = ((three_degree_pairs$final_mass / three_degree_pairs$initial_mass) - 1) * 100
+three_degree_pairs$PD_5 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$initial_mass) - 1) * 100
+three_degree_pairs$PD_6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
 
 # Average percent differences
-avg_pd_1 = mean(percent_diff1)
-avg_pd_2 = mean(percent_diff2)
-avg_pd_3 = mean(percent_diff3)
-avg_pd_4 = mean(percent_diff4)
-avg_pd_5 = mean(percent_diff5)
-avg_pd_6 = mean(percent_diff6)
+avg_pd_1 = mean(three_degree_pairs$PD_1)
+avg_pd_2 = mean(three_degree_pairs$PD_2)
+avg_pd_3 = mean(three_degree_pairs$PD_3)
+avg_pd_4 = mean(three_degree_pairs$PD_4)
+avg_pd_5 = mean(three_degree_pairs$PD_5)
+avg_pd_6 = mean(three_degree_pairs$PD_6)
 
 # Standard deviations of percent differences
-sd_pd_1 = sd(percent_diff1)
-sd_pd_2 = sd(percent_diff2)
-sd_pd_3 = sd(percent_diff3)
-sd_pd_4 = sd(percent_diff4)
-sd_pd_5 = sd(percent_diff5)
-sd_pd_6 = sd(percent_diff6)
+sd_pd_1 = sd(three_degree_pairs$PD_1)
+sd_pd_2 = sd(three_degree_pairs$PD_2)
+sd_pd_3 = sd(three_degree_pairs$PD_3)
+sd_pd_4 = sd(three_degree_pairs$PD_4)
+sd_pd_5 = sd(three_degree_pairs$PD_5)
+sd_pd_6 = sd(three_degree_pairs$PD_6)
 
 ### Statistical tests
 
@@ -236,16 +236,18 @@ legend("topright", c("initial", "final", "constant met rate"), title = "Masses:"
 # lines(x = c(-7, 7), y = c(-7, 7))
 
 # Barplot of percent differences for metabolic rates; expect 0 < diff3 < diff1 < diff2
-barplot(percent_diff2, col = rgb(0, 0, 1, 0.5), ylab = "Metabolic rate percent diff")
-barplot(percent_diff1, add = T)
-barplot(percent_diff3, col = rgb(1, 0, 0, 0.5), add = T)
+barplot(three_degree_pairs$PD_2, col = rgb(0, 0, 1, 0.5), ylab = "Metabolic rate percent diff", 
+        xlab = "3* diff pairs")
+barplot(three_degree_pairs$PD_1, add = T)
+barplot(three_degree_pairs$PD_3, col = rgb(1, 0, 0, 0.5), add = T)
 legend("topright", c("actual diff (1)", "no mass change diff (2)", "(3)"), cex = 0.8, 
        title = "Met rate comparison", fill = c("white", "blue", "red"))
 
 # Barplot of percent differences for masses; expect 0 > diff4 > diff 5, uncertain diff6
-barplot(percent_diff5, col = rgb(0, 0, 1, 0.5), ylab = "Mass percent diff")
-barplot(percent_diff6, col = rgb(1, 0, 0, 0.5), add = T)
-barplot(percent_diff4, add = T)
+barplot(three_degree_pairs$PD_5, col = rgb(0, 0, 1, 0.5), ylab = "Mass percent diff", 
+        xlab = "3* diff pairs")
+barplot(three_degree_pairs$PD_6, col = rgb(1, 0, 0, 0.5), add = T)
+barplot(three_degree_pairs$PD_4, add = T)
 legend("topright", c("actual diff (4)", "needed diff (5)", "(6)"), cex = 0.8, title = "Mass comparison", 
        fill = c("white", "blue", "red"))
 
@@ -263,9 +265,43 @@ barplot(c(avg_pd_4, avg_pd_5, avg_pd_6), col = c("white", "blue", "red"),
 
 #-----------------------------ABSOLUTE TEMP-------------------------------
 
+# Arrange dataset according to initial temperature
+data_by_temp = three_degree_pairs[with(three_degree_pairs, order(initial_temp)), ]
+
+# Barplot of percent differences for metabolic rates; expect 0 < diff3 < diff1 < diff2
+barplot(data_by_temp$PD_2, col = rgb(0, 0, 1, 0.5), ylab = "Metabolic rate percent diff", 
+        xlab = "3* diff pairs by increasing temp")
+barplot(data_by_temp$PD_1, add = T)
+barplot(data_by_temp$PD_3, col = rgb(1, 0, 0, 0.5), add = T)
+legend("top", c("actual diff (1)", "no mass change diff (2)", "(3)"), cex = 0.8, 
+       title = "Met rate comparison", fill = c("white", "blue", "red"))
+
+# Barplot of percent differences for masses; expect 0 > diff4 > diff 5, uncertain diff6
+barplot(data_by_temp$PD_5, col = rgb(0, 0, 1, 0.5), ylab = "Mass percent diff", 
+        xlab = "3* diff pairs by increasing temp")
+barplot(data_by_temp$PD_6, col = rgb(1, 0, 0, 0.5), add = T)
+barplot(data_by_temp$PD_4, add = T)
+legend("top", c("actual diff (4)", "needed diff (5)", "(6)"), cex = 0.8, title = "Mass comparison", 
+       fill = c("white", "blue", "red"))
+
+# Lin reg of scatterplot of difference in metabolic rate when mass is constant
+# or changes, larger positive values indicate changing mass keeps met rate closer
+# to initial
+plot(data_by_temp$initial_temp, data_by_temp$PD_3)
+linreg = lm(data_by_temp$PD_3 ~ data_by_temp$initial_temp)
+print(summary(linreg))
+abline(linreg, lty = 2)
+abline(h = 0, col = "red")
+
+# Lin reg of scatterplot of difference in mass when met rate is constant or
+# changes, values closer to zero indicate mass change keeps met rate closer to 
+# initial
+plot(data_by_temp$initial_temp, data_by_temp$PD_6)
+linreg = lm(data_by_temp$PD_6 ~ data_by_temp$initial_temp)
+print(summary(linreg))
+abline(linreg, lty = 2)
+abline(h = 0, col = "red")
+
 # Arrange dataset according to class
 #three_degree_pairs = three_degree_pairs[with(three_degree_pairs, order(Class)), ]
-
-# Arrange dataset according to initial temperature
-#three_degree_pairs = three_degree_pairs[with(three_degree_pairs, order(initial_temp)), ]
 
