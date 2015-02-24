@@ -161,6 +161,16 @@ three_degree_pairs$PD_4 = ((three_degree_pairs$final_mass / three_degree_pairs$i
 three_degree_pairs$PD_5 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$initial_mass) - 1) * 100
 three_degree_pairs$PD_6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
 
+# Create species dataset
+# Would like to add in species instances column
+library(dplyr)
+species_data = three_degree_pairs %>%
+  group_by(species) %>%
+  #summarise(count = n())
+  summarise_each(funs(mean), initial_mass, final_mass, initial_metrate, final_metrate, 
+                 constantmass_metrate, constantmetrate_mass, PD_1, PD_2, PD_3, PD_4, PD_5, PD_6) 
+# Would like to add in class column, attempt to use previous lookup function
+#lookup_test = lookup[match(species_data$species)]
 
 ### Figures
 
