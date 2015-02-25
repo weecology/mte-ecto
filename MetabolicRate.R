@@ -162,79 +162,95 @@ three_degree_pairs$PD_5 = ((three_degree_pairs$constantmetrate_mass / three_degr
 three_degree_pairs$PD_6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
 
 # Create species dataset
-# Would like to add in species instances column
+# This code is way awful
 library(dplyr)
+
+# Get columns for averages
 species_data = three_degree_pairs %>%
   group_by(species) %>%
   #summarise(count = n())
   summarise_each(funs(mean), initial_mass, final_mass, initial_metrate, final_metrate, 
                  constantmass_metrate, constantmetrate_mass, PD_1, PD_2, PD_3, PD_4, PD_5, PD_6) 
-# Would like to add in class column, attempt to use previous lookup function
-#lookup_test = lookup[match(species_data$species)]
+
+# Add in species occurrence values
+occurrences = three_degree_pairs %>%
+  group_by(species) %>%
+  summarise(count = n())
+
+species_data$occurrences = occurrences$count
+
+# Add in class column
+lookup_test = lookup[match(species_data$species, three_degree_pairs$species),]
+species_data$class = lookup_test$Class
 
 ### Figures
 
 # Regression + ANOVA: initial and constant mass
-plot(log(three_degree_pairs$initial_mass), log(three_degree_pairs$initial_metrate), col = "blue")
-linreg1 = lm(log(three_degree_pairs$initial_metrate) ~ log(three_degree_pairs$initial_mass))
+plot(log(species_data$initial_mass), log(species_data$initial_metrate), col = "blue")
+linreg1 = lm(log(species_data$initial_metrate) ~ log(species_data$initial_mass))
 print(summary(linreg1))
 abline(linreg1, col = "blue")
-points(log(three_degree_pairs$initial_mass), log(three_degree_pairs$constantmass_metrate), col = "red")
-linreg2 = lm(log(three_degree_pairs$constantmass_metrate) ~ log(three_degree_pairs$initial_mass))
+points(log(species_data$initial_mass), log(species_data$constantmass_metrate), col = "red")
+linreg2 = lm(log(species_data$constantmass_metrate) ~ log(species_data$initial_mass))
 print(summary(linreg2))
 abline(linreg2, col = "red")
 
 # Regression + ANOVA: initial and final
-plot(log(three_degree_pairs$initial_mass), log(three_degree_pairs$initial_metrate), col = "blue")
-linreg3 = lm(log(three_degree_pairs$initial_metrate) ~ log(three_degree_pairs$initial_mass))
+plot(log(species_data$initial_mass), log(species_data$initial_metrate), col = "blue")
+linreg3 = lm(log(species_data$initial_metrate) ~ log(species_data$initial_mass))
 print(summary(linreg3))
 abline(linreg3, col = "blue")
-points(log(three_degree_pairs$final_mass), log(three_degree_pairs$final_metrate), col = "red")
-linreg4 = lm(log(three_degree_pairs$final_metrate) ~ log(three_degree_pairs$final_mass))
+points(log(species_data$final_mass), log(species_data$final_metrate), col = "red")
+linreg4 = lm(log(species_data$final_metrate) ~ log(species_data$final_mass))
 print(summary(linreg4))
 abline(linreg4, col = "red")
 
 # Regression + ANOVA: initial and constant metabolic rate
-plot(log(three_degree_pairs$initial_metrate), log(three_degree_pairs$initial_mass), col = "blue")
-linreg5 = lm(log(three_degree_pairs$initial_mass) ~ log(three_degree_pairs$initial_metrate))
+plot(log(species_data$initial_metrate), log(species_data$initial_mass), col = "blue")
+linreg5 = lm(log(species_data$initial_mass) ~ log(species_data$initial_metrate))
 print(summary(linreg5))
 abline(linreg5, col = "blue")
-points(log(three_degree_pairs$initial_metrate), log(three_degree_pairs$constantmetrate_mass), col = "red")
-linreg6 = lm(log(three_degree_pairs$constantmetrate_mass) ~ log(three_degree_pairs$initial_metrate))
+points(log(species_data$initial_metrate), log(species_data$constantmetrate_mass), col = "red")
+linreg6 = lm(log(species_data$constantmetrate_mass) ~ log(species_data$initial_metrate))
 print(summary(linreg6))
 abline(linreg6, col = "red")
 
-# Density plots for t-test for metabolic rate + normality test
-plot(density(three_degree_pairs$PD_1), col = "purple")
-lines(density(three_degree_pairs$PD_2), col = "orange")
-shapiro.test(three_degree_pairs$PD_1)
-shapiro.test(three_degree_pairs$PD_2)
+# Density plots for t-test for metabolic rate + normality test + t-test
+plot(density(species_data$PD_1), col = "purple", ylim = c(0, 0.19))
+lines(density(species_data$PD_2), col = "orange")
+abline(v = 0, lty = 2, col = "red")
+shapiro.test(species_data$PD_1)
+shapiro.test(species_data$PD_2)
+t.test(species_data$PD_1, species_data$PD_2, paired = TRUE)
 
-# Density plots for t-test for mass + normality test
-plot(density(three_degree_pairs$PD_4), col = "purple")
-lines(density(three_degree_pairs$PD_5), col = "orange")
-shapiro.test(three_degree_pairs$PD_4)
-shapiro.test(three_degree_pairs$PD_5)
+# Density plots for t-test for mass + normality test + t-test
+plot(density(species_data$PD_4), col = "purple", xlim = c(-40, 40), ylim = c(0, 0.25))
+lines(density(species_data$PD_5), col = "orange")
+abline(v = 0, lty = 2, col = "red")
+shapiro.test(species_data$PD_4)
+shapiro.test(species_data$PD_5)
+t.test(species_data$PD_4, species_data$PD_5, paired = TRUE)
 
 # Density plot of metabolic rates, log-transformed
-plot(density(log(three_degree_pairs$initial_metrate)), col = "orange", main = "", 
+plot(density(log(species_data$initial_metrate)), col = "orange", main = "", 
      xlab = "log(metabolic rate value)", ylab = "metabolic rate density")
-lines(density(log(three_degree_pairs$final_metrate)), col = "green")
-lines(density(log(three_degree_pairs$constantmass_metrate)), col = "purple")
+lines(density(log(species_data$final_metrate)), col = "green")
+lines(density(log(species_data$constantmass_metrate)), col = "purple")
 legend("topright", c("initial", "final", "constant mass"), title = "Metabolic rates:",
        fill = c("orange", "green", "purple"))
 
 # Density plot of mass values, log-transformed
-plot(density(log(three_degree_pairs$initial_mass)), col = "orange", main = "", 
+plot(density(log(species_data$initial_mass)), col = "orange", main = "", 
      xlab = "log(mass value)", ylab = "mass density")
-lines(density(log(three_degree_pairs$final_mass)), col = "green")
-lines(density(log(three_degree_pairs$constantmetrate_mass)), col = "purple")
+lines(density(log(species_data$final_mass)), col = "green")
+lines(density(log(species_data$constantmetrate_mass)), col = "purple")
 legend("topright", c("initial", "final", "constant met rate"), title = "Masses:",
        fill = c("orange", "green", "purple"))
 
 
 ### Statistical tests
 
+# ANOVA for regression plots and two-sample t-test for density plots, can't do though
 
 #-----------------------------ABSOLUTE TEMP-------------------------------
 
