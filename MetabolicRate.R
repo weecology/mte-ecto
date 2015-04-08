@@ -185,39 +185,6 @@ species_data$class = lookup_test$Class
 
 ### Figures
 
-# Regression + ANOVA: initial and constant mass
-plot(log(species_data$initial_mass), log(species_data$initial_metrate), col = "black", main = "Comparison of Initial and Constant Mass Metabolic Rates", xlab = "Mass", ylab = "Metablic Rate")
-legend("topleft", c("initial", "constant mass"), fill = c("black", "green"))
-linreg1 = lm(log(species_data$initial_metrate) ~ log(species_data$initial_mass))
-print(summary(linreg1))
-abline(linreg1, col = "black")
-points(log(species_data$initial_mass), log(species_data$constantmass_metrate), col = "green")
-linreg2 = lm(log(species_data$constantmass_metrate) ~ log(species_data$initial_mass))
-print(summary(linreg2))
-abline(linreg2, col = "green")
-
-# Regression + ANOVA: initial and final
-plot(log(species_data$initial_mass), log(species_data$initial_metrate), col = "black", main = "Comparison of Initial and Final Masses + MRs", xlab = "Mass", ylab = "Metabolic Rate")
-legend("topleft", c("initial", "final"), fill = c("black", "orange"))
-linreg3 = lm(log(species_data$initial_metrate) ~ log(species_data$initial_mass))
-print(summary(linreg3))
-abline(linreg3, col = "black")
-points(log(species_data$final_mass), log(species_data$final_metrate), col = "orange")
-linreg4 = lm(log(species_data$final_metrate) ~ log(species_data$final_mass))
-print(summary(linreg4))
-abline(linreg4, col = "orange")
-
-# Regression + ANOVA: initial and constant metabolic rate
-plot(log(species_data$initial_metrate), log(species_data$initial_mass), col = "black", main = "Comparison of Initial and Constant MR Masses", xlab = "Metabolic Rate", ylab = "Mass")
-legend("topleft", c("initial", "constant MR"), fill = c("black", "yellow"))
-linreg5 = lm(log(species_data$initial_mass) ~ log(species_data$initial_metrate))
-print(summary(linreg5))
-abline(linreg5, col = "black")
-points(log(species_data$initial_metrate), log(species_data$constantmetrate_mass), col = "yellow")
-linreg6 = lm(log(species_data$constantmetrate_mass) ~ log(species_data$initial_metrate))
-print(summary(linreg6))
-abline(linreg6, col = "yellow")
-
 # Density plots for t-test for metabolic rate + normality test + t-test
 plot(density(species_data$PD_1), col = "purple", ylim = c(0, 0.19), main = "Comparison of Mass PDs", xlab = "Percent Difference", ylab = "PD Density")
 legend("topright", c("1: initial to final", "2: initial to constant mass"), fill = c("purple", "orange"))
@@ -236,23 +203,4 @@ shapiro.test(species_data$PD_4)
 shapiro.test(species_data$PD_5)
 t.test(species_data$PD_4, species_data$PD_5, paired = TRUE)
 
-# Density plot of metabolic rates, log-transformed
-plot(density(log(species_data$initial_metrate)), col = "orange", main = "", 
-     xlab = "log(metabolic rate value)", ylab = "metabolic rate density")
-lines(density(log(species_data$final_metrate)), col = "green")
-lines(density(log(species_data$constantmass_metrate)), col = "purple")
-legend("topright", c("initial", "final", "constant mass"), title = "Metabolic rates:",
-       fill = c("orange", "green", "purple"))
-
-# Density plot of mass values, log-transformed
-plot(density(log(species_data$initial_mass)), col = "orange", main = "", 
-     xlab = "log(mass value)", ylab = "mass density")
-lines(density(log(species_data$final_mass)), col = "green")
-lines(density(log(species_data$constantmetrate_mass)), col = "purple")
-legend("topright", c("initial", "final", "constant met rate"), title = "Masses:",
-       fill = c("orange", "green", "purple"))
-
-
 ### Statistical tests
-
-# ANOVA for regression plots and two-sample t-test for density plots, can't do though
