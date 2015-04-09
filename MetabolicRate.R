@@ -186,18 +186,18 @@ species_data$class = lookup_test$Class
 ### Figures
 
 # Density plots for t-test for metabolic rate + normality test + t-test
-plot(density(species_data$PD_1), col = "purple", ylim = c(0, 0.19), main = "Comparison of Mass PDs", xlab = "Percent Difference", ylab = "PD Density")
-legend("topright", c("1: initial to final", "2: initial to constant mass"), fill = c("purple", "orange"))
-lines(density(species_data$PD_2), col = "orange")
+plot(density(species_data$PD_1), col = "black", ylim = c(0, 0.19), main = "Comparison of MR PDs", xlab = "Percent Difference", ylab = "PD Density")
+legend("topright", c("1: initial to final", "2: initial to constant mass"), fill = c("black", "green"))
+lines(density(species_data$PD_2), col = "green")
 abline(v = 0, lty = 2, col = "red")
 shapiro.test(species_data$PD_1)
 shapiro.test(species_data$PD_2)
 t.test(species_data$PD_1, species_data$PD_2, paired = TRUE)
 
 # Density plots for t-test for mass + normality test + t-test
-plot(density(species_data$PD_4), col = "purple", xlim = c(-40, 40), ylim = c(0, 0.25), main = "Comparison of MR PDs", xlab = "Percent Difference", ylab = "PD Density")
-lines(density(species_data$PD_5), col = "black")
-legend("topright", c("4: initial to final", "5: inital to constant MR"), fill = c("purple", "black"))
+plot(density(species_data$PD_4), col = "black", xlim = c(-40, 40), ylim = c(0, 0.25), main = "Comparison of Mass PDs", xlab = "Percent Difference", ylab = "PD Density")
+lines(density(species_data$PD_5), col = "orange")
+legend("topright", c("4: initial to final", "5: inital to constant MR"), fill = c("black", "orange"))
 abline(v = 0, lty = 2, col = "red")
 shapiro.test(species_data$PD_4)
 shapiro.test(species_data$PD_5)
