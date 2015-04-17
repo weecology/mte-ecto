@@ -3,7 +3,7 @@ Purpose: Metabolic rate and mass in ectotherms after 3* increase in temperature
 
 
 #### CALCULATING EXPONENTS AND ACTIVATION ENERGY FOR METABOLIC EQUATION
-This section uses metabolic rate, temperature, and size data to calculated fitted exponent and activation energy for the taxonomic classes for which we could find data. 
+Use metabolic rate, temperature, and size data to calculated fitted exponent and activation energy for the taxonomic classes for which we could find data. 
 
 ```{r, echo=FALSE}
 # Classes: Branchiopoda, Malacostraca, Maxillopoda
@@ -136,4 +136,90 @@ colnames(three_degree_pairs)[12] = "Ea"
 class_distribution = table(three_degree_pairs$Class)
 
 head(three_degree_pairs)
+```
+
+#### CALCULATE METABOLIC RATES/MASSES
+
+Use two masses from each 3* pair and MTE to calculate metabolic rates or masses for initial, final, constant mass, and constant metabolic rate conditions. 
+
+```{r, echo=FALSE}
+# Use MTE equation to calculate metabolic rates (initial, final, and w/ constant/initial mass)
+three_degree_pairs$initial_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$initial_temp + 273.15)))))
+three_degree_pairs$final_metrate = (three_degree_pairs$final_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
+three_degree_pairs$constantmass_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
+
+# Use rearranged MTE equation to calculate mass w/ constant/initial metabolic rate
+three_degree_pairs$constantmetrate_mass = (three_degree_pairs$initial_metrate / (exp(three_degree_pairs$Ea / (.00008617 * (three_degree_pairs$final_temp + 273.15))))) ^ (1 / three_degree_pairs$exponent)
+
+head(three_degree_pairs[,13:16])
+
+```
+
+#### EXPLORATORY STATS AND FIGURES
+
+Percent differences plots
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+### Summary values
+
+# Percent differences for metabolic rates
+  # 1: initial to final (empirical), expect increase
+  # 2: initial to constant mass (theoretical), expect increase
+  # 3: final to constant mass, expect increase
+three_degree_pairs$PD_1 = ((three_degree_pairs$final_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+three_degree_pairs$PD_2 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$initial_metrate) - 1) * 100
+three_degree_pairs$PD_3 = ((three_degree_pairs$constantmass_metrate / three_degree_pairs$final_metrate) - 1) * 100
+
+# Percent differences for masses
+  # 4: initial to final (empirical), expect decrease
+  # 5: initial to constant metabolic rate (theoretical), expect decrease
+  # 6: final to constant metabolic rate, expect decrease
+three_degree_pairs$PD_4 = ((three_degree_pairs$final_mass / three_degree_pairs$initial_mass) - 1) * 100
+three_degree_pairs$PD_5 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$initial_mass) - 1) * 100
+three_degree_pairs$PD_6 = ((three_degree_pairs$constantmetrate_mass / three_degree_pairs$final_mass) - 1) * 100
+
+# Create species dataset
+# This code is way awful
+library(dplyr)
+
+# Get columns for averages
+species_data = three_degree_pairs %>%
+  group_by(species) %>%
+  #summarise(count = n())
+  summarise_each(funs(mean), initial_mass, final_mass, initial_metrate, final_metrate, 
+                 constantmass_metrate, constantmetrate_mass, PD_1, PD_2, PD_3, PD_4, PD_5, PD_6) 
+
+# Add in species occurrence values
+occurrences = three_degree_pairs %>%
+  group_by(species) %>%
+  summarise(count = n())
+
+species_data$occurrences = occurrences$count
+
+# Add in class column
+lookup_test = lookup[match(species_data$species, three_degree_pairs$species),]
+species_data$class = lookup_test$Class
+```
+
+```{r, echo=FALSE, results='hide'}
+### Figures
+
+# Density plots for t-test for metabolic rate + normality test + t-test
+plot(density(species_data$PD_1), col = "black", ylim = c(0, 0.19), main = "Comparison of MR PDs", xlab = "Percent Difference", ylab = "PD Density")
+legend("topright", c("1: initial to final", "2: initial to constant mass"), fill = c("black", "green"))
+lines(density(species_data$PD_2), col = "green")
+abline(v = 0, lty = 2, col = "red")
+shapiro.test(species_data$PD_1)
+shapiro.test(species_data$PD_2)
+t.test(species_data$PD_1, species_data$PD_2, paired = TRUE)
+
+# Density plots for t-test for mass + normality test + t-test
+plot(density(species_data$PD_4), col = "black", xlim = c(-40, 40), ylim = c(0, 0.25), main = "Comparison of Mass PDs", xlab = "Percent Difference", ylab = "PD Density")
+lines(density(species_data$PD_5), col = "orange")
+legend("topright", c("4: initial to final", "5: inital to constant MR"), fill = c("black", "orange"))
+abline(v = 0, lty = 2, col = "red")
+shapiro.test(species_data$PD_4)
+shapiro.test(species_data$PD_5)
+t.test(species_data$PD_4, species_data$PD_5, paired = TRUE)
+
 ```
