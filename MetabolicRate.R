@@ -190,10 +190,16 @@ barplot(three_degree_pairs$PD_1, col = "green", ylab = "MR change from initial")
 barplot(three_degree_pairs$PD_2, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("Actual", "Constant mass"), fill = c("green", "white"))
 
+# Metabolic rate PD comparison for actual and constant mass conditions
+boxplot(three_degree_pairs$PD_1, three_degree_pairs$PD_2, main = "Mass change mediates MR increase", xlab = "Mass", ylab = "Metabolic rate PD", names = c("actual (i.e., varying)", "constant"))
+
 # Mass PD comparison for each observationn
 barplot(three_degree_pairs$PD_4, col = "orange", ylab = "Mass change from initial")
 barplot(three_degree_pairs$PD_5, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("Actual", "Compensation"), fill = c("orange", "white"))
+
+# Mass PD comparison for actual and constant metabolic rate conditions
+boxplot(three_degree_pairs$PD_4, three_degree_pairs$PD_5, main = "Required mass change to maintain MR", xlab = "Metabolic rate", ylab = "Mass PD", names = c("actual", "constant (i.e., compensation mass)"))
 
 # Density plots for t-test for metabolic rate + normality test + t-test
 plot(density(species_data$PD_1), col = "black", ylim = c(0, 0.19), main = "Comparison of MR PDs", xlab = "Percent Difference", ylab = "PD Density")
