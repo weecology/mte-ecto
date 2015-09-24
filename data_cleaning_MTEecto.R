@@ -139,3 +139,6 @@ three_degree_pairs$constantmass_metrate = (three_degree_pairs$initial_mass ^ thr
 
 # Use rearranged MTE equation to calculate mass w/ constant/initial metabolic rate
 three_degree_pairs$constantmetrate_mass = (three_degree_pairs$initial_metrate / (exp(three_degree_pairs$Ea / (.00008617 * (three_degree_pairs$final_temp + 273.15))))) ^ (1 / three_degree_pairs$exponent)
+
+# Create CSV of cleaned and prepared data
+write.csv(three_degree_pairs, file = "clean_data_MTEecto.csv")
