@@ -1,9 +1,29 @@
 # Read in clean data
-# TODO: change dataset name to something less stupid and long
 replicates_data = read.csv("clean_data_MTEecto.csv")
 
 # Look at distributions of all mass and metabolic rate values
+par(mfrow = c(3, 2))
+hist(replicates_data$initial_mass)
+hist(replicates_data$initial_metrate)
+hist(replicates_data$final_mass)
+hist(replicates_data$final_metrate)
+hist(replicates_data$constantmass_metrate)
+hist(replicates_data$constantmetrate_mass)
 
+# Do normality test on all mass and metabolic rate values
+
+pvalues_list = list(non_trans = numeric())
+
+IM_norm = shapiro.test(replicates_data$initial_mass)
+pvalues_list[1,1] = IM_norm$p.value
+
+IME_norm = shapiro.test(replicates_data$initial_metrate)
+pvalues_list[[2]] = IME_norm$p.value
+
+shapiro.test(replicates_data$final_mass)
+shapiro.test(replicates_data$final_metrate)
+shapiro.test(replicates_data$constantmass_metrate)
+shapiro.test(replicates_data$constantmetrate_mass)
 
 
 #-----------------------TRANSFORM MASS & MR VALUES-----------------------------
@@ -17,6 +37,7 @@ replicates_data$log_constantmass_metrate = log(replicates_data$constantmass_metr
 replicates_data$log_constantmetrate_mass = log(replicates_data$constantmetrate_mass)
 
 # Histograms of transformed values
+par(mfrow = c(3, 2))
 hist(replicates_data$log_initial_mass)
 hist(replicates_data$log_initial_metrate)
 hist(replicates_data$log_final_mass)
