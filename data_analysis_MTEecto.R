@@ -1,6 +1,8 @@
 # Read in clean data
 replicates_data = read.csv("clean_data_MTEecto.csv")
 
+#--------------------NORMALITY OF MASS & MR VALUES-------------------------
+
 # Look at distributions of all mass and metabolic rate values
 par(mfrow = c(3, 2))
 hist(replicates_data$initial_mass)
@@ -10,28 +12,22 @@ hist(replicates_data$final_metrate)
 hist(replicates_data$constantmass_metrate)
 hist(replicates_data$constantmetrate_mass)
 
-# Do normality test on all mass and metabolic rate values
-
-pvalues_list = list(non_trans = numeric())
-
+# Generate list of normality test p-values for all mass and MR values
 IM_norm = shapiro.test(replicates_data$initial_mass)
-pvalues_list[1,1] = IM_norm$p.value
+IMR_norm = shapiro.test(replicates_data$initial_metrate)
+FM_norm = shapiro.test(replicates_data$final_mass)
+FMR_norm = shapiro.test(replicates_data$final_metrate)
+CMR_norm = shapiro.test(replicates_data$constantmass_metrate)
+CM_norm = shapiro.test(replicates_data$constantmetrate_mass)
 
-IME_norm = shapiro.test(replicates_data$initial_metrate)
-pvalues_list[[2]] = IME_norm$p.value
+non_trans = c(IM_norm$p.value, IMR_norm$p.value, FM_norm$p.value, FMR_norm$p.value, CMR_norm$p.value, CM_norm$p.value)
 
-shapiro.test(replicates_data$final_mass)
-shapiro.test(replicates_data$final_metrate)
-shapiro.test(replicates_data$constantmass_metrate)
-shapiro.test(replicates_data$constantmetrate_mass)
-
-
-#-----------------------TRANSFORM MASS & MR VALUES-----------------------------
+#-----------------NORMALITY OF TRANSFORMED MASS & MR VALUES--------------------
 
 # Log transform all metabolic rate & mass values
 replicates_data$log_initial_mass = log(replicates_data$initial_mass)
 replicates_data$log_initial_metrate = log(replicates_data$initial_metrate)
-replicates_data$log_final_mass = log(replicates_data$final_temp)
+replicates_data$log_final_mass = log(replicates_data$final_mass)
 replicates_data$log_final_metrate = log(replicates_data$final_metrate)
 replicates_data$log_constantmass_metrate = log(replicates_data$constantmass_metrate)
 replicates_data$log_constantmetrate_mass = log(replicates_data$constantmetrate_mass)
@@ -45,21 +41,39 @@ hist(replicates_data$log_final_metrate)
 hist(replicates_data$log_constantmass_metrate)
 hist(replicates_data$log_constantmetrate_mass)
 
+# Add log transformed values to normality test p-values list
+LIM_norm = shapiro.test(replicates_data$log_initial_mass)
+LIMR_norm = shapiro.test(replicates_data$log_initial_metrate)
+LFM_norm = shapiro.test(replicates_data$log_final_mass)
+LFMR_norm = shapiro.test(replicates_data$log_final_metrate)
+LCMR_norm = shapiro.test(replicates_data$log_constantmass_metrate)
+LCM_norm = shapiro.test(replicates_data$log_constantmetrate_mass)
+
+trans = c(LIM_norm$p.value, LIM_norm$p.value, LFM_norm$p.value, LFMR_norm$p.value, LCMR_norm$p.value, LCM_norm$p.value)
+norm_pvalues = data.frame(non_trans, trans)
+
+#------------------DIFFERENCES IN TRANSFORMED FINAL & CONSTANT VALUES--------------
+
+par(mfrow = c(2, 2))
 # Comparison of final and constant mass transformed metabolic rates
+# Positive values mean MR is greater when mass does not vary
+t.test(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, paired = TRUE)
+boxplot(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, main = "Mass change mediates MR increase", xlab = "Mass", ylab = "Log metabolic rate", names = c("actual (i.e., varying)", "constant"))
 replicates_data$metrate_comparison = replicates_data$log_constantmass_metrate - replicates_data$log_final_metrate
 mean(replicates_data$metrate_comparison)
 hist(replicates_data$metrate_comparison)
-t.test(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, paired = TRUE)
-boxplot(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, main = "Mass change mediates MR increase", xlab = "Mass", ylab = "Log metabolic rate", names = c("actual (i.e., varying)", "constant"))
 
 # Comparison of final and constant MR transformed masses
+# Negative values mean mass would have to be much smaller for MR to be maintained
+t.test(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, paired = TRUE)
+boxplot(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, main = "Required mass change to maintain MR", xlab = "Metabolic rate", ylab = "Log mass", names = c("actual", "constant (i.e., compensation mass)"))
 replicates_data$mass_comparison = replicates_data$log_constantmetrate_mass - replicates_data$log_final_mass
 mean(replicates_data$mass_comparison)
 hist(replicates_data$mass_comparison)
-t.test(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, paired = TRUE)
-boxplot(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, main = "Required mass change to maintain MR", xlab = "Metabolic rate", ylab = "Log mass", names = c("actual", "constant (i.e., compensation mass)"))
 
-#-------------------PERCENT DIFFERENCES OF MASS & MR VALUES--------------------
+# TODO: Add in bootstrap code to both of these to verify t-test
+
+#-----------PERCENT DIFFERENCES OF MASS & MR VALUES TO INCLUDE INITIAL----------
 
 # Percent differences for metabolic rates
 # 1: initial to final (empirical), expect increase
@@ -78,6 +92,7 @@ replicates_data$PD_5 = ((replicates_data$constantmetrate_mass / replicates_data$
 replicates_data$PD_6 = ((replicates_data$constantmetrate_mass / replicates_data$final_mass) - 1) * 100
 
 # Metabolic rate PD comparison for each observationn
+par(mfrow = c(1, 1))
 barplot(replicates_data$PD_1, col = "green", ylab = "MR change from initial")
 barplot(replicates_data$PD_2, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("Actual", "Constant mass"), fill = c("green", "white"))
@@ -130,25 +145,11 @@ occurrences = replicates_data %>%
 
 species_data$occurrences = occurrences$count
 
-# Density plots for t-test for metabolic rate + normality test + t-test
-plot(density(species_data$PD_1), col = "black", ylim = c(0, 0.19), main = "Comparison of MR PDs", xlab = "Percent Difference", ylab = "PD Density")
-legend("topright", c("1: initial to final", "2: initial to constant mass"), fill = c("black", "green"))
-lines(density(species_data$PD_2), col = "green")
-abline(v = 0, lty = 2, col = "red")
-shapiro.test(species_data$PD_1)
-shapiro.test(species_data$PD_2)
-t.test(species_data$PD_1, species_data$PD_2, paired = TRUE)
+# Add log transformed values to species dataset
+species_data$log_initial_mass = log(species_data$initial_mass)
+species_data$log_initial_metrate = log(species_data$initial_metrate)
+species_data$log_final_mass = log(species_data$final_mass)
+species_data$log_final_metrate = log(species_data$final_metrate)
+species_data$log_constantmass_metrate = log(species_data$constantmass_metrate)
+species_data$log_constantmetrate_mass = log(species_data$constantmetrate_mass)
 
-# Density plots for t-test for mass + normality test + t-test
-plot(density(species_data$PD_4), col = "black", xlim = c(-40, 40), ylim = c(0, 0.25), main = "Comparison of Mass PDs", xlab = "Percent Difference", ylab = "PD Density")
-lines(density(species_data$PD_5), col = "orange")
-legend("topright", c("4: initial to final", "5: inital to constant MR"), fill = c("black", "orange"))
-abline(v = 0, lty = 2, col = "red")
-shapiro.test(species_data$PD_4)
-shapiro.test(species_data$PD_5)
-t.test(species_data$PD_4, species_data$PD_5, paired = TRUE)
-
-# Add in class column
-# FIXME: lookup is a dataframe in the cleaning R script
-#lookup_test = lookup[match(species_data$species, replicates_data$species),]
-#species_data$class = lookup_test$Class
