@@ -57,21 +57,38 @@ norm_pvalues = data.frame(non_trans, trans)
 par(mfrow = c(2, 2))
 # Comparison of final and constant mass transformed metabolic rates
 # Positive values mean MR is greater when mass does not vary
+# Bootstrap gets distribution of average log difference to check that value
 t.test(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, paired = TRUE)
 boxplot(replicates_data$log_final_metrate, replicates_data$log_constantmass_metrate, main = "Mass change mediates MR increase", xlab = "Mass", ylab = "Log metabolic rate", names = c("actual (i.e., varying)", "constant"))
 replicates_data$metrate_comparison = replicates_data$log_constantmass_metrate - replicates_data$log_final_metrate
 mean(replicates_data$metrate_comparison)
 hist(replicates_data$metrate_comparison)
+MR_bootstrap = replicate(1000, {
+  boot_rows = sample.int(nrow(replicates_data), replace = TRUE)
+  boot_dataset = replicates_data[boot_rows, ]
+  mean(log(boot_dataset$constantmass_metrate) - log(boot_dataset$final_metrate))
+}
+)
+hist(MR_bootstrap)
+abline(v = mean(replicates_data$metrate_comparison), lwd = 3, col = "red")
 
+par(mfrow = c(2, 2))
 # Comparison of final and constant MR transformed masses
 # Negative values mean mass would have to be much smaller for MR to be maintained
+# Bootstrap gets distribution of average log difference to check that value
 t.test(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, paired = TRUE)
 boxplot(replicates_data$log_final_mass, replicates_data$log_constantmetrate_mass, main = "Required mass change to maintain MR", xlab = "Metabolic rate", ylab = "Log mass", names = c("actual", "constant (i.e., compensation mass)"))
 replicates_data$mass_comparison = replicates_data$log_constantmetrate_mass - replicates_data$log_final_mass
 mean(replicates_data$mass_comparison)
 hist(replicates_data$mass_comparison)
-
-# TODO: Add in bootstrap code to both of these to verify t-test
+mass_bootstrap = replicate(1000, {
+  boot_rows = sample.int(nrow(replicates_data), replace = TRUE)
+  boot_dataset = replicates_data[boot_rows, ]
+  mean(log(boot_dataset$constantmetrate_mass) - log(boot_dataset$final_mass))
+  }
+)
+hist(mass_bootstrap)
+abline(v = mean(replicates_data$mass_comparison), lwd = 3, col = "red")
 
 #-----------PERCENT DIFFERENCES OF MASS & MR VALUES TO INCLUDE INITIAL----------
 
