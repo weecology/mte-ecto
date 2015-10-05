@@ -105,7 +105,7 @@ for(current_replicate in replicate_list_original){
   single_replicate_combos = cbind(current_replicate, single_replicate_combos)
   all_pairs = rbind(all_pairs, single_replicate_combos)
 }
-names(all_pairs) = c("studyID", "initial_temp_row", "final_temp_row", "initial_temp", "final_temp", "initial_mass", "final_mass")
+names(all_pairs) = c("studyID", "initial_temp_row", "final_temp_row", "initial_temp", "final_temp", "initial_mass_grams", "final_mass_grams")
 
 # Subset dataset to contain only temperature pairs that differ by 3*
 all_pairs$temp_diff = all_pairs$final_temp - all_pairs$initial_temp
@@ -127,6 +127,10 @@ colnames(three_degree_pairs)[12] = "Ea"
 
 # List of classes and number of pairs per class
 class_distribution = table(three_degree_pairs$Class)
+
+# Change mass units from grams to micrograms
+three_degree_pairs$initial_mass = three_degree_pairs$initial_mass_grams * 1000000
+three_degree_pairs$final_mass = three_degree_pairs$final_mass_grams * 1000000
 
 #------------------CALCULATE METABOLIC RATES/MASSES--------------------------
 
