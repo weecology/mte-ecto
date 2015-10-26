@@ -115,7 +115,8 @@ barplot(replicates_data$PD_2, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("Actual", "Constant mass"), fill = c("green", "white"))
 
 # Metabolic rate PD comparison for actual and constant mass conditions
-boxplot(replicates_data$PD_1, replicates_data$PD_2, main = "Mass change mediates MR increase", xlab = "Mass", ylab = "Metabolic rate PD", names = c("actual (i.e., varying)", "constant"))
+boxplot(replicates_data$PD_2, replicates_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"))
+abline(h = 0, col = "red", lty = 2)
 
 # Mass PD comparison for each observationn
 barplot(replicates_data$PD_4, col = "orange", ylab = "Mass change from initial")
@@ -123,7 +124,8 @@ barplot(replicates_data$PD_5, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("Actual", "Compensation"), fill = c("orange", "white"))
 
 # Mass PD comparison for actual and constant metabolic rate conditions
-boxplot(replicates_data$PD_4, replicates_data$PD_5, main = "Required mass change to maintain MR", xlab = "Metabolic rate", ylab = "Mass PD", names = c("actual", "constant (i.e., compensation mass)"))
+boxplot(replicates_data$PD_5, replicates_data$PD_4, main = "Required mass change to maintain MR", ylab = "Percent change in mass", names = c("compensation", "empirical"))
+abline(h = 0, col = "red", lty = 2)
 
 # ------------------Mixed model----------
 
