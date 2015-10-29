@@ -131,18 +131,19 @@ abline(h = 0, col = "red", lty = 2)
 
 library(lme4)
 
-replicates_data$releveled_class = relevel(factor(replicates_data$Class), "Insecta")
+# LMM including all fixed and random effects of interest
+LMM = lmer(mass_comparison ~ initial_temp + initial_mass_grams + Class + (1 | species) + (1 | studyID), data = replicates_data)
+summary(LMM)
 
-replicates_data$paper_id = gsub("[A-Z]$", "", as.character(replicates_data$studyID))
-
-summary(lmer(mass_comparison ~ (1|studyID), data = replicates_data))
-summary(lmer(mass_comparison ~ (1|species), data = replicates_data))
-summary(lmer(mass_comparison ~ releveled_class + (1|species), data = replicates_data))
-
-summary(lmer(mass_comparison ~ releveled_class + (1|species) + (1|paper_id), data = replicates_data))
-
-# Don't publish based on these numbers
-round(ranef(lmer(mass_comparison ~ releveled_class + (1|species), data = replicates_data))[[1]], 3)
+# # From meeting with Dave
+# replicates_data$releveled_class = relevel(factor(replicates_data$Class), "Insecta")
+# replicates_data$paper_id = gsub("[A-Z]$", "", as.character(replicates_data$studyID))
+# summary(lmer(mass_comparison ~ (1|studyID), data = replicates_data))
+# summary(lmer(mass_comparison ~ (1|species), data = replicates_data))
+# summary(lmer(mass_comparison ~ releveled_class + (1|species), data = replicates_data))
+# summary(lmer(mass_comparison ~ releveled_class + (1|species) + (1|paper_id), data = replicates_data))
+# # Don't publish based on these numbers
+# round(ranef(lmer(mass_comparison ~ releveled_class + (1|species), data = replicates_data))[[1]], 3)
 
 #---------------------SPECIES VALUES------------------------
 
