@@ -173,3 +173,26 @@ species_data$log_final_metrate = log(species_data$final_metrate)
 species_data$log_constantmass_metrate = log(species_data$constantmass_metrate)
 species_data$log_constantmetrate_mass = log(species_data$constantmetrate_mass)
 
+#---------------------CLASS VALUES------------------------
+
+# Get columns for averages
+classes_data = replicates_data %>%
+  group_by(Class) %>%
+  #summarise(count = n())
+  summarise_each(funs(mean), initial_mass, final_mass, initial_metrate, final_metrate, 
+                 constantmass_metrate, constantmetrate_mass, PD_1, PD_2, PD_3, PD_4, PD_5, PD_6) 
+
+# Add in species occurrence values
+occurrences = replicates_data %>%
+  group_by(Class) %>%
+  summarise(count = n())
+
+classes_data$occurrences = occurrences$count
+
+replicates_data %>%
+  group_by(Class) %>%
+  print(Class)
+
+boxplot(replicates_data$PD_2, replicates_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"))
+abline(h = 0, col = "red", lty = 2)
+
