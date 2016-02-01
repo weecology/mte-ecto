@@ -182,16 +182,25 @@ classes_data = replicates_data %>%
   summarise_each(funs(mean), initial_mass, final_mass, initial_metrate, final_metrate, 
                  constantmass_metrate, constantmetrate_mass, PD_1, PD_2, PD_3, PD_4, PD_5, PD_6) 
 
-# Add in species occurrence values
+# Add in class occurrence values
 occurrences = replicates_data %>%
   group_by(Class) %>%
   summarise(count = n())
 
 classes_data$occurrences = occurrences$count
 
-replicates_data %>%
-  group_by(Class) %>%
-  print(Class)
+# Plot percent differences by class averages
+boxplot(classes_data$PD_2, classes_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"), ylim = c(0, 40))
+abline(h = 0, col = "red", lty = 2)
+
+boxplot(classes_data$PD_5, classes_data$PD_4, main = "Required mass change to maintain MR", ylab = "Percent change in mass", names = c("compensation", "empirical"))
+abline(h = 0, col = "red", lty = 2)
+
+# Plot percent differences of each pair by class
+by_class = group_by(replicates_data, Class)
+boxplot(by_class$PD_2, by_class$PD_1)
+#testing_sum = summarise(by_class)
+#boxplot(testing_sum$PD_2, testing_sum$PD_1)
 
 boxplot(replicates_data$PD_2, replicates_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"))
 abline(h = 0, col = "red", lty = 2)
