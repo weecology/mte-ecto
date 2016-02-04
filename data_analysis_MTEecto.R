@@ -190,18 +190,20 @@ occurrences = replicates_data %>%
 classes_data$occurrences = occurrences$count
 
 # Plot percent differences by class averages
-boxplot(classes_data$PD_2, classes_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"), ylim = c(0, 40))
+boxplot(classes_data$PD_2, classes_data$PD_1, main = "Mass change mediates MR increase by class avg", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"), ylim = c(0, 40))
 abline(h = 0, col = "red", lty = 2)
 
-boxplot(classes_data$PD_5, classes_data$PD_4, main = "Required mass change to maintain MR", ylab = "Percent change in mass", names = c("compensation", "empirical"))
+boxplot(classes_data$PD_5, classes_data$PD_4, main = "Required mass change to maintain MR by class avg", ylab = "Percent change in mass", names = c("compensation", "empirical"))
 abline(h = 0, col = "red", lty = 2)
 
 # Plot percent differences of each pair by class
-by_class = group_by(replicates_data, Class)
-boxplot(by_class$PD_2, by_class$PD_1)
-#testing_sum = summarise(by_class)
-#boxplot(testing_sum$PD_2, testing_sum$PD_1)
+#I don't understand what group by fx is doing
+classes_plot = replicates_data %>%
+  group_by(Class)
 
-boxplot(replicates_data$PD_2, replicates_data$PD_1, main = "Mass change mediates MR increase", ylab = "Percent change in MR", names = c("direct effect of temp", "direct & indirect effects of temp"))
-abline(h = 0, col = "red", lty = 2)
+library(ggplot2)
+cp = ggplot(classes_plot, aes(Class, PD_1))
+cp + geom_boxplot()
 
+classes_plot %>%
+  boxplot(PD_2, PD_1)
