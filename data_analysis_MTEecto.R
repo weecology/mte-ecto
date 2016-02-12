@@ -197,13 +197,9 @@ boxplot(classes_data$PD_5, classes_data$PD_4, main = "Required mass change to ma
 abline(h = 0, col = "red", lty = 2)
 
 # Plot percent differences of each pair by class
-#I don't understand what group by fx is doing
-classes_plot = replicates_data %>%
-  group_by(Class)
-
+library(dplyr)
 library(ggplot2)
-cp = ggplot(classes_plot, aes(Class, PD_1))
-cp + geom_boxplot()
-
-classes_plot %>%
-  boxplot(PD_2, PD_1)
+library(reshape2)
+class_plot_df = select(replicates_data, studyID, Class, PD_1, PD_2)
+class_plot_df_reshape = melt(class_plot_df, id = c("studyID", "Class"))
+ggplot(class_plot_df_reshape) + geom_boxplot(aes(x = variable, y = value)) + facet_grid(~Class)
