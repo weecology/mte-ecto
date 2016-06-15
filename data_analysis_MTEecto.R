@@ -1,7 +1,7 @@
 # Read in clean data
 pairs_data = read.csv("clean_data_MTEecto.csv", stringsAsFactors = FALSE)
 
-#---------------------------PAIRS-------------------
+#---------------------------PAIRS VISUALIZATION & ANALYSIS-------------------
 
 # Metabolic rate
 pairs_data$PD_MR_CS = ((pairs_data$constantmass_metrate / pairs_data$initial_metrate) - 1) * 100
@@ -13,14 +13,46 @@ barplot(pairs_data$PD_MR_VS, col = "green", xlab = "Pairs", ylab = "MR change du
 barplot(pairs_data$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
 
-pairs_data = pairs_data[order(pairs_data$initial_temp),]
-barplot(pairs_data$PD_MR_VS, col = "green", xlab = "Pairs", ylab = "MR change due to temp increase")
-barplot(pairs_data$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
-
+# Linear mixed model for difference in metabolic rates
 pairs_data$log_MR_diff = log(pairs_data$constantmass_metrate) - log(pairs_data$final_metrate)
+library(lme4)
+initial_model = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class) + (1|studyID) + (1|study), data = pairs_data)
+summary(initial_model)
+#removed random effects study and studyID because they explained no variability
+full_model = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data)
+summary(full_model)
+coef(full_model)
+hist(resid(full_model))
+plot(fitted(full_model), residuals(full_model)) #linearity good, heteroscedasticity
+abline(h = 0)
+hist(residuals(full_model))
+qqnorm(residuals(full_model))
+qqline(residuals(full_model)) #normality of residuals not good, but that's okay? 
 
-#TODO: MR PDs for all pairs grouped by species
+# Likelihood ratio test for temp w/ linear regression plot
+null_temp = lmer(log_MR_diff ~ (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+model_temp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_temp, model_temp)
+par(mfrow = c(1, 1))
+lr = lm(pairs_data$log_MR_diff ~ pairs_data$initial_temp)
+plot(pairs_data$initial_temp, pairs_data$log_MR_diff)
+abline(lr)
+
+# Likelihood ratio test for species
+null_sp = lmer(log_MR_diff ~ initial_temp + (1|Class), data = pairs_data, REML = FALSE)
+model_sp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_sp, model_sp)
+
+# Likelihood ratio test for class
+null_class = lmer(log_MR_diff ~ initial_temp + (1|species), data = pairs_data, REML = FALSE)
+model_class = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_class, model_class)
+
+#---------------METABOLIC RATE ANALYSIS & VISUALIZATION----------
+
+### Metabolic rate percent differences
+
+#MR PDs for all pairs grouped by species
 sp_names = data.frame(table(pairs_data$species))
 sp_names = sp_names[order(sp_names$Freq, decreasing = TRUE),]
 
@@ -32,102 +64,16 @@ for(name in sp_names$Var1){
   abline(h = 0)
 }
 
-library(lme4)
-#removed random effects study and studyID because they explained no variability
-full_model = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data)
-summary(full_model)
-
-# Likelihood Ratio Test for temp
-null_temp = lmer(log_MR_diff ~ (1|species) + (1|Class), data = pairs_data, REML = FALSE)
-model_temp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
-anova(null_temp, model_temp)
-
-par(mfrow = c(1, 1))
-lr = lm(pairs_data$log_MR_diff ~ pairs_data$initial_temp)
-plot(pairs_data$initial_temp, pairs_data$log_MR_diff)
-abline(lr)
-
-# Likelihood Ratio Test for species
-null_sp = lmer(log_MR_diff ~ initial_temp + (1|Class), data = pairs_data, REML = FALSE)
-model_sp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
-anova(null_sp, model_sp)
-
-# Likelihood Ratio Test for class
-null_class = lmer(log_MR_diff ~ initial_temp + (1|species), data = pairs_data, REML = FALSE)
-model_class = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
-anova(null_class, model_class)
-
-#---------------METABOLIC RATE ANALYSIS & VISUALIZATION----------
-
-### Metabolic rate percent differences
-
+# Average pairs' PD values to get species PD values
 library(dplyr)
 species_data = pairs_data %>% 
   group_by(species) %>% 
-  summarise_each(funs(mean, sd), PD_MR_CS, PD_MR_VS)
+  summarise_each(funs(mean, sd), PD_MR_CS, PD_MR_VS, initial_metrate, final_metrate, constantmass_metrate)
 
 occurrences = pairs_data %>% 
   group_by(species) %>% 
   summarise(count = n())
 species_data$occurrences = occurrences$count
-
-# Looking at variation in percent differences for each species w/ sufficient pairs
-species_data = species_data[order(species_data$occurrences, decreasing = TRUE),]
-sub_species_data = species_data[1:4,]
-
-par(mfrow = c(2, 2))
-sp1 = pairs_data[pairs_data$species == "Drosophila melanogaster  ",]
-sp1$PD_mass = ((sp1$final_mass / sp1$initial_mass) - 1) * 100
-sp1 = sp1[order(sp1$PD_mass, decreasing = TRUE),]
-sp1$MR_diff = sp1$PD_MR_VS - sp1$PD_MR_CS
-barplot(sp1$PD_MR_VS, col = "green", main = "Drosophila melanogaster")
-barplot(sp1$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-abline(h = mean(sp1$PD_MR_VS), col = "green")
-abline(h = mean(sp1$PD_MR_CS))
-
-sp2 = pairs_data[pairs_data$species == "Drosophila simulans  ",]
-sp2$PD_mass = ((sp2$final_mass / sp2$initial_mass) - 1) * 100
-sp2 = sp2[order(sp2$PD_mass, decreasing = TRUE),]
-sp2$MR_diff = sp2$PD_MR_VS - sp2$PD_MR_CS
-barplot(sp2$PD_MR_VS, col = "green", main = "Drosophila simulans")
-barplot(sp2$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-abline(h = mean(sp2$PD_MR_VS), col = "green")
-abline(h = mean(sp2$PD_MR_CS))
-
-sp3 = pairs_data[pairs_data$species == "Rana sylvatica",]
-sp3$PD_mass = ((sp3$final_mass / sp3$initial_mass) - 1) * 100
-sp3 = sp3[order(sp3$PD_mass, decreasing = TRUE),]
-sp3$MR_diff = sp3$PD_MR_VS - sp3$PD_MR_CS
-barplot(sp3$PD_MR_VS, col = "green", main = "Rana sylvatica")
-barplot(sp3$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-abline(h = mean(sp3$PD_MR_VS), col = "green")
-abline(h = mean(sp3$PD_MR_CS))
-
-sp4 = pairs_data[pairs_data$species == "Acyrthosiphon pisum ",]
-sp4$PD_mass = ((sp4$final_mass / sp4$initial_mass) - 1) * 100
-sp4 = sp4[order(sp4$PD_mass, decreasing = TRUE),]
-sp4$MR_diff = sp4$PD_MR_VS - sp4$PD_MR_CS
-barplot(sp4$PD_MR_VS, col = "green", main = "Acyrthosiphon pisum")
-barplot(sp4$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-abline(h = mean(sp4$PD_MR_VS), col = "green")
-abline(h = mean(sp4$PD_MR_CS))
-
-par(mfrow = c(2, 2))
-for (species_name in unique(sub_species_data$species)){
-  sub = filter(pairs_data, species == species_name)
-  hist(sub$PD_MR_VS, main = c(species_name), col = "green")
-  abline(v = mean(sub$PD_MR_VS), col = "green")
-  hist(sub$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-  abline(v = mean(sub$PD_MR_CS))
-}
-
-par(mfrow = c(1, 2))
-bp_VS = barplot(sub_species_data$PD_MR_VS_mean)
-arrows(bp_VS, sub_species_data$PD_MR_VS_mean + sub_species_data$PD_MR_VS_sd, bp_VS, sub_species_data$PD_MR_VS_mean, angle = 90, code = 0)
-arrows(bp_VS, sub_species_data$PD_MR_VS_mean - sub_species_data$PD_MR_VS_sd, bp_VS, sub_species_data$PD_MR_VS_mean, angle = 90, code = 0)
-bp_CS = barplot(sub_species_data$PD_MR_CS_mean)
-arrows(bp_CS, sub_species_data$PD_MR_CS_mean + sub_species_data$PD_MR_CS_sd, bp_CS, sub_species_data$PD_MR_CS_mean, angle = 90, code = 0)
-arrows(bp_CS, sub_species_data$PD_MR_CS_mean - sub_species_data$PD_MR_CS_sd, bp_CS, sub_species_data$PD_MR_CS_mean, angle = 90, code = 0)
 
 # Barplot
 par(mfrow = c(1, 1))
@@ -137,9 +83,12 @@ barplot(species_data$PD_MR_VS_mean, col = "green", xlab = "Species", ylab = "MR 
 barplot(species_data$PD_MR_CS_mean, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
 
-# T-test or something? 
-#TODO: paired t-test comparing constant mass and varying mass MR PDs
-
+# # Average pairs' metabolic rates to get species MR values, then do PD
+# species_data$PD_MR_CS_calc = ((species_data$constantmass_metrate_mean / species_data$initial_metrate_mean) - 1) * 100
+# species_data$PD_MR_VS_calc = ((species_data$final_metrate_mean / species_data$initial_metrate_mean) - 1) * 100
+# barplot(species_data$PD_MR_VS_calc, col = rgb(1, 0, 0, alpha = 0.2), xlab = "Species", ylab = "MR change due to temp increase", add = TRUE)
+# barplot(species_data$PD_MR_CS_calc, col = rgb(0, 0, 1, alpha = 0.2), add = TRUE)
+# legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
 
 #------------------MASS ANALYSIS & VISUALIZATION---------------
 
