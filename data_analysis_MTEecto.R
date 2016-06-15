@@ -13,9 +13,49 @@ barplot(pairs_data$PD_MR_VS, col = "green", xlab = "Pairs", ylab = "MR change du
 barplot(pairs_data$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
 legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
 
-#TODO: MR PDs for all pairs grouped by species
-#pairs_bp = pairs_data[pairs_data, order(MR_diff, species),]
+pairs_data = pairs_data[order(pairs_data$initial_temp),]
+barplot(pairs_data$PD_MR_VS, col = "green", xlab = "Pairs", ylab = "MR change due to temp increase")
+barplot(pairs_data$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
+legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
 
+pairs_data$log_MR_diff = log(pairs_data$constantmass_metrate) - log(pairs_data$final_metrate)
+
+#TODO: MR PDs for all pairs grouped by species
+sp_names = data.frame(table(pairs_data$species))
+sp_names = sp_names[order(sp_names$Freq, decreasing = TRUE),]
+
+par(mfrow = c(3, 5))
+for(name in sp_names$Var1){
+  sp_df = pairs_data[pairs_data$species == name,]
+  barplot(sp_df$PD_MR_VS, col = "green", main = name, ylim = c(15, 90))
+  barplot(sp_df$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
+  abline(h = 0)
+}
+
+library(lme4)
+#removed random effects study and studyID because they explained no variability
+full_model = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data)
+summary(full_model)
+
+# Likelihood Ratio Test for temp
+null_temp = lmer(log_MR_diff ~ (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+model_temp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_temp, model_temp)
+
+par(mfrow = c(1, 1))
+lr = lm(pairs_data$log_MR_diff ~ pairs_data$initial_temp)
+plot(pairs_data$initial_temp, pairs_data$log_MR_diff)
+abline(lr)
+
+# Likelihood Ratio Test for species
+null_sp = lmer(log_MR_diff ~ initial_temp + (1|Class), data = pairs_data, REML = FALSE)
+model_sp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_sp, model_sp)
+
+# Likelihood Ratio Test for class
+null_class = lmer(log_MR_diff ~ initial_temp + (1|species), data = pairs_data, REML = FALSE)
+model_class = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_class, model_class)
 
 #---------------METABOLIC RATE ANALYSIS & VISUALIZATION----------
 
