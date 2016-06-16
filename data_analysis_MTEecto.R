@@ -29,7 +29,12 @@ hist(residuals(full_model))
 qqnorm(residuals(full_model))
 qqline(residuals(full_model)) #normality of residuals not good, but that's okay? 
 
-# Likelihood ratio test for temp w/ linear regression plot
+# Full model but w/ size as fixed effect
+# initial_mass vs. initial_mass_mg ?
+full_model_size = lmer(log_MR_diff ~ initial_temp + initial_mass_mg + (1|species) + (1|Class), data = pairs_data)
+summary(full_model_size)
+
+# Likelihood ratio test for temp w/ linear regression plot & by species variation
 null_temp = lmer(log_MR_diff ~ (1|species) + (1|Class), data = pairs_data, REML = FALSE)
 model_temp = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
 anova(null_temp, model_temp)
@@ -37,6 +42,34 @@ par(mfrow = c(1, 1))
 lr = lm(pairs_data$log_MR_diff ~ pairs_data$initial_temp)
 plot(pairs_data$initial_temp, pairs_data$log_MR_diff)
 abline(lr)
+
+pairs_data = pairs_data[order(pairs_data$species),]
+library(dplyr)
+by_species = group_by(pairs_data, species)
+temperatures = summarise(by_species, 
+                         pairs_count = n(),
+                         minimum = min(initial_temp), 
+                         maximum = max(initial_temp), 
+                         average = mean(initial_temp), 
+                         standard_dev = sd(initial_temp))
+barplot(temperatures$maximum)
+barplot(temperatures$minimum, col = "red", add = TRUE)
+
+# Likelihood ratio test for size w/ lin reg plot & by species variation
+null_size = lmer(log_MR_diff ~ initial_temp + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+model_size = lmer(log_MR_diff ~ initial_temp + initial_mass_mg + (1|species) + (1|Class), data = pairs_data, REML = FALSE)
+anova(null_size, model_size)
+lr_size = lm(pairs_data$log_MR_diff ~ pairs_data$initial_mass_mg)
+plot(pairs_data$initial_mass_mg, pairs_data$log_MR_diff)
+abline(lr_size)
+
+sizes = summarise(by_species, 
+                  minimum = min(initial_mass), 
+                  maximum = max(initial_mass), 
+                  average = mean(initial_mass), 
+                  standard_dev = sd(initial_mass))
+barplot(log(sizes$maximum))
+barplot(log(sizes$minimum), col = "red", add = TRUE)
 
 # Likelihood ratio test for species
 null_sp = lmer(log_MR_diff ~ initial_temp + (1|Class), data = pairs_data, REML = FALSE)
