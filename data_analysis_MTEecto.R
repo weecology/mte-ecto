@@ -121,16 +121,22 @@ t.test(log(species_data$constantmass_metrate), log(species_data$final_metrate), 
 #------------------MASS ANALYSIS & VISUALIZATION---------------
 
 ### Mass ratio for 1:1 plot
-pairs_data$needed_mass_ratio = pairs_data$constantmetrate_mass / pairs_data$initial_mass
-pairs_data$actual_mass_ratio = pairs_data$final_mass / pairs_data$initial_mass
-
-ratios = pairs_data %>%
+mass_averages = pairs_data %>%
   group_by(species) %>%
-  summarise_each(funs(mean), needed_mass_ratio, actual_mass_ratio)
-species_data$needed_mass_ratio = ratios$needed_mass_ratio
-species_data$actual_mass_ratio = ratios$actual_mass_ratio
+  summarise_each(funs(mean), initial_mass, final_mass, constantmetrate_mass)
 
+species_data = merge(x = species_data, y = mass_averages, by = "species", all.x = TRUE)
+species_data$needed_mass_ratio = species_data$constantmetrate_mass / species_data$initial_mass
+species_data$actual_mass_ratio = species_data$final_mass / species_data$initial_mass
 # Plot
 plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.6, 1.35), ylim = c(0.6, 1.35), pch = 20)
 lines(x = c(0.6, 1.35), y = c(0.6, 1.35))
 abline(h = 1, v = 1, col = "red", lty = 2)
+
+# Temporary plot
+plot(density(log(species_data$constantmetrate_mass)))
+lines(density(log(species_data$final_mass)), col = "red")
+
+# T test for comparing means of actual and needed mass
+t.test(log(species_data$final_mass), log(species_data$constantmetrate_mass), paired = TRUE)
+
