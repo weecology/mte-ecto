@@ -106,8 +106,8 @@ species_data = summarise(by_species,
 
 # Calculations and percent difference plots
 species_data$log_MR_diff = log(species_data$constantmass_metrate) - log(species_data$final_metrate)
-species_data$PD_MR_CS = ((species_data$constantmass_metrate / species_data$initial_metrate) - 1) * 100
-species_data$PD_MR_VS = ((species_data$final_metrate / species_data$initial_metrate) - 1) * 100
+species_data$PD_MR_CS = (species_data$constantmass_metrate - species_data$initial_metrate) / abs(species_data$initial_metrate) * 100
+species_data$PD_MR_VS = (species_data$final_metrate - species_data$initial_metrate) / abs(species_data$initial_metrate) * 100
 species_data = species_data[order(species_data$PD_MR_VS, decreasing = TRUE),]
 par(mfrow = c(1, 1))
 barplot(species_data$PD_MR_VS, col = "green", xlab = "Species", ylab = "MR change due to temp increase")
@@ -128,6 +128,7 @@ mass_averages = pairs_data %>%
 species_data = merge(x = species_data, y = mass_averages, by = "species", all.x = TRUE)
 species_data$needed_mass_ratio = species_data$constantmetrate_mass / species_data$initial_mass
 species_data$actual_mass_ratio = species_data$final_mass / species_data$initial_mass
+
 # Plot
 plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.6, 1.35), ylim = c(0.6, 1.35), pch = 20)
 lines(x = c(0.6, 1.35), y = c(0.6, 1.35))
