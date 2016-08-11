@@ -97,7 +97,7 @@ for(name in sp_names$Var1){
 }
 
 # Average metabolic rates by species
-by_species = group_by(pairs_data, species)
+by_species = group_by(pairs_data, species, Class)
 species_data = summarise(by_species, 
                          pairs_count = n(), 
                          initial_metrate = mean(initial_metrate), 
@@ -108,13 +108,24 @@ species_data = summarise(by_species,
 species_data$log_MR_diff = log(species_data$constantmass_metrate) - log(species_data$final_metrate)
 species_data$PD_MR_CS = (species_data$constantmass_metrate - species_data$initial_metrate) / abs(species_data$initial_metrate) * 100
 species_data$PD_MR_VS = (species_data$final_metrate - species_data$initial_metrate) / abs(species_data$initial_metrate) * 100
-species_data = species_data[order(species_data$PD_MR_VS, decreasing = TRUE),]
-par(mfrow = c(1, 1))
-barplot(species_data$PD_MR_VS, col = "green", xlab = "Species", ylab = "MR change due to temp increase")
-barplot(species_data$PD_MR_CS, col = rgb(0, 0, 0, alpha = 0.3), add = TRUE)
-legend("topright", c("constant mass/no STR", "varying mass/STR"), fill = c("white", "green"))
+
+library(tidyr)
+library(ggplot2)
+species_data_plot = species_data[c("species", "Class", "PD_MR_CS", "PD_MR_VS")]
+species_data_plot = gather(species_data_plot, key, value, -species, -Class)
+species_data_plot$class_abbr = as.numeric(factor(species_data_plot$Class))
+ggplot(species_data_plot, aes(x = species, y = value, fill = factor(key))) +
+  geom_bar(stat = "identity", position = "identity") + 
+  facet_grid(~class_abbr, scales = "free_x", space = "free_x") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_fill_manual(values = c(rgb(0, 0, 1, alpha = 0.5), rgb(1, 0, 0, alpha = 0.5)), 
+                    labels = c("Constant-mass metabolic rate", "Varying-mass metabolic rate")) +
+  guides(fill = guide_legend(title = NULL)) + 
+  theme(legend.position = "top") + 
+  scale_y_continuous(name = "Percent change from initial mass (%)") + scale_x_discrete(name = "Species")
 
 # T-test for comparing means of varying size and constant size metabolic rates
+par(mfrow = c(1, 1))
 hist(species_data$log_MR_diff) #normality of difference between pairs
 t.test(log(species_data$constantmass_metrate), log(species_data$final_metrate), paired = TRUE)
 
@@ -130,8 +141,8 @@ species_data$needed_mass_ratio = species_data$constantmetrate_mass / species_dat
 species_data$actual_mass_ratio = species_data$final_mass / species_data$initial_mass
 
 # Plot
-plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.6, 1.35), ylim = c(0.6, 1.35), pch = 20)
-lines(x = c(0.6, 1.35), y = c(0.6, 1.35))
+plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.63, 1.37), ylim = c(0.63, 1.37), pch = 20, xlab = "Needed mass ratio", ylab = "Actual mass ratio")
+lines(x = c(0, 5), y = c(0, 5))
 abline(h = 1, v = 1, col = "red", lty = 2)
 
 # Temporary plot
