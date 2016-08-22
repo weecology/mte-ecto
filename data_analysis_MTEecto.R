@@ -123,6 +123,8 @@ ggplot(species_data_plot, aes(x = species, y = value, fill = factor(key))) +
   guides(fill = guide_legend(title = NULL)) + 
   theme(legend.position = "top") + 
   scale_y_continuous(name = "Percent change from initial mass (%)") + scale_x_discrete(name = "Species")
+class_abbreviation = unique(species_data_plot[,c("Class", "class_abbr")])
+class_abbreviation = class_abbreviation[order(class_abbreviation$class_abbr),]
 
 # T-test for comparing means of varying size and constant size metabolic rates
 par(mfrow = c(1, 1))
@@ -141,13 +143,28 @@ species_data$needed_mass_ratio = species_data$constantmetrate_mass / species_dat
 species_data$actual_mass_ratio = species_data$final_mass / species_data$initial_mass
 
 # Plot
-plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.63, 1.37), ylim = c(0.63, 1.37), pch = 20, xlab = "Needed mass ratio", ylab = "Actual mass ratio")
+par(mar = c(6.1, 6.1, 2.1, 2.1))
+plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.6, 1.37), ylim = c(0.6, 1.37), pch = 20, xlab = "", ylab = "")
+axis(side = 1, at = seq(0.6, 1.3, 0.1))
+axis(side = 2, at = seq(0.6, 1.3, 0.1))
 lines(x = c(0, 5), y = c(0, 5))
-abline(h = 1, v = 1, col = "red", lty = 2)
+abline(h = 1, v = 1, lty = 3)
+title(xlab = "Needed mass ratio", ylab = "Actual mass ratio", line = 4.5)
 
-# Temporary plot
-plot(density(log(species_data$constantmetrate_mass)))
-lines(density(log(species_data$final_mass)), col = "red")
+text(1.3, 1.17, "mass change for\n temperature to have\n no effect on metabolic rate", cex = 0.9, xpd = TRUE)
+arrows(x0 = 1.33, y0 = 1.23, x1 = 1.3, y1 = 1.28, length = 0.08)
+
+arrows(x0 = 0.9857598, y0 = 0.45, x1 = 0.6, length = 0.1, xpd = TRUE)
+text(0.75, 0.48, "mass needed to decrease", cex = 0.9, xpd = TRUE)
+
+arrows(x0 = 1.1, y0 = 0.45, x1 = 1.3, length = 0.1, xpd = TRUE)
+text(1.25, 0.48, "mass needed to increase", cex = 0.9, xpd = TRUE)
+
+arrows(x0 = 0.5, y0 = 1.1, y1 = 1.4, length = 0.1, xpd = TRUE)
+text(0.48, 1.25, "mass increased", cex = 0.9, xpd = TRUE, srt = 90)
+
+arrows(x0 = 0.5, y0 = 0.9, y1 = 0.6, length = 0.1, xpd = TRUE)
+text(0.48, 0.75, "mass decreased", cex = 0.9, xpd = TRUE, srt = 90)
 
 # T test for comparing means of actual and needed mass
 t.test(log(species_data$final_mass), log(species_data$constantmetrate_mass), paired = TRUE)
