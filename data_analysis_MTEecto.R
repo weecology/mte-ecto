@@ -122,7 +122,7 @@ ggplot(species_data_plot, aes(x = species, y = value, fill = factor(key))) +
                     labels = c("Constant-mass metabolic rate", "Varying-mass metabolic rate")) +
   guides(fill = guide_legend(title = NULL)) + 
   theme(legend.position = "top") + 
-  scale_y_continuous(name = "Percent change from initial mass (%)") + scale_x_discrete(name = "Species")
+  scale_y_continuous(name = "Percent difference from initial metabolic rate (%)") + scale_x_discrete(name = "Species")
 class_abbreviation = unique(species_data_plot[,c("Class", "class_abbr")])
 class_abbreviation = class_abbreviation[order(class_abbreviation$class_abbr),]
 
@@ -133,38 +133,28 @@ t.test(log(species_data$constantmass_metrate), log(species_data$final_metrate), 
 
 #------------------MASS ANALYSIS & VISUALIZATION---------------
 
-### Mass ratio for 1:1 plot
+### Mass percentage for 1:1 plot
 mass_averages = pairs_data %>%
   group_by(species) %>%
   summarise_each(funs(mean), initial_mass, final_mass, constantmetrate_mass)
 
 species_data = merge(x = species_data, y = mass_averages, by = "species", all.x = TRUE)
-species_data$needed_mass_ratio = species_data$constantmetrate_mass / species_data$initial_mass
-species_data$actual_mass_ratio = species_data$final_mass / species_data$initial_mass
+species_data$needed_mass_percent = species_data$constantmetrate_mass / species_data$initial_mass * 100
+species_data$actual_mass_percent = species_data$final_mass / species_data$initial_mass * 100
 
 # Plot
-par(mar = c(6.1, 6.1, 2.1, 2.1))
-plot(species_data$needed_mass_ratio, species_data$actual_mass_ratio, xlim = c(0.6, 1.37), ylim = c(0.6, 1.37), pch = 20, xlab = "", ylab = "")
-axis(side = 1, at = seq(0.6, 1.3, 0.1))
-axis(side = 2, at = seq(0.6, 1.3, 0.1))
-lines(x = c(0, 5), y = c(0, 5))
-abline(h = 1, v = 1, lty = 3)
-title(xlab = "Needed mass ratio", ylab = "Actual mass ratio", line = 4.5)
+plot(species_data$needed_mass_percent, species_data$actual_mass_percent, xlim = c(60, 137), ylim = c(60, 137), pch = 20, xlab = "Needed mass percentage of initial mass", ylab = "Actual mass percentage of initial mass")
+lines(x = c(0, 500), c(0, 500))
+abline(h = 100, v = 100, lty = 3)
 
-text(1.3, 1.17, "mass change for\n temperature to have\n no effect on metabolic rate", cex = 0.9, xpd = TRUE)
-arrows(x0 = 1.33, y0 = 1.23, x1 = 1.3, y1 = 1.28, length = 0.08)
+text(113.9082, 131.3315, "mass change for temp-\n erature to have no effect\n on metabolic rate", cex = 0.9, xpd = TRUE)
+arrows(x0 = 113.9818, y0 = 122.8864, x1 = 113.7489, y1 = 115.0543, length = 0.08)
 
-arrows(x0 = 0.9857598, y0 = 0.45, x1 = 0.6, length = 0.1, xpd = TRUE)
-text(0.75, 0.48, "mass needed to decrease", cex = 0.9, xpd = TRUE)
+text(130.9794, 89.15552, "mass does\n not change")
+arrows(x0 = 130.6321, y0 = 94.34712, x1 = 130.6321, y1 = 99.01680, length = 0.08)
 
-arrows(x0 = 1.1, y0 = 0.45, x1 = 1.3, length = 0.1, xpd = TRUE)
-text(1.25, 0.48, "mass needed to increase", cex = 0.9, xpd = TRUE)
-
-arrows(x0 = 0.5, y0 = 1.1, y1 = 1.4, length = 0.1, xpd = TRUE)
-text(0.48, 1.25, "mass increased", cex = 0.9, xpd = TRUE, srt = 90)
-
-arrows(x0 = 0.5, y0 = 0.9, y1 = 0.6, length = 0.1, xpd = TRUE)
-text(0.48, 0.75, "mass decreased", cex = 0.9, xpd = TRUE, srt = 90)
+text(115.6321, 64.21285, "mass does not\n need to change")
+arrows(x0 = 106.2136, y0 = 64.41466, x1 = 101.9626, y1 = 64.41466, length = 0.08)
 
 # T test for comparing means of actual and needed mass
 t.test(log(species_data$final_mass), log(species_data$constantmetrate_mass), paired = TRUE)
