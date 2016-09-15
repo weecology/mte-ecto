@@ -114,15 +114,40 @@ library(ggplot2)
 species_data_plot = species_data[c("species", "Class", "PD_MR_CS", "PD_MR_VS")]
 species_data_plot = gather(species_data_plot, key, value, -species, -Class)
 species_data_plot$class_abbr = as.numeric(factor(species_data_plot$Class))
-ggplot(species_data_plot, aes(x = species, y = value, fill = factor(key))) +
-  geom_bar(stat = "identity", position = "identity") + 
+
+#overlaid bars
+# ggplot(species_data_plot, aes(x = species, y = value, fill = factor(key))) +
+#   geom_bar(stat = "identity", position = "identity") + 
+#   facet_grid(~class_abbr, scales = "free_x", space = "free_x") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+#   scale_fill_manual(values = c(rgb(0, 0, 1, alpha = 0.5), rgb(1, 0, 0, alpha = 0.5)), 
+#                     labels = c("Constant-mass metabolic rate", "Varying-mass metabolic rate")) +
+#   guides(fill = guide_legend(title = NULL)) + 
+#   theme(legend.position = "top") + 
+#   scale_y_continuous(name = "Percent difference from initial metabolic rate (%)") + scale_x_discrete(name = "Species")
+
+#side-by-side bars
+asterisks = species_data %>%
+  group_by(species) %>%
+  select(species, PD_MR_CS, PD_MR_VS) %>%
+  mutate(value_real = ifelse(PD_MR_CS > PD_MR_VS, PD_MR_CS, PD_MR_VS), 
+         color = ifelse(PD_MR_CS > PD_MR_VS, "PD_MR_CS", "PD_MR_VS"))
+asterisks = merge(x = asterisks, y = species_data_plot[,c("class_abbr", "species")], by = "species", all.x = TRUE)
+asterisks$value = rep(-3, nrow(asterisks))
+
+ggplot(species_data_plot, aes(x = species, y = value)) +
+  geom_bar(aes(fill = key), position = "dodge", stat = "identity") +
+  theme_bw() +
   facet_grid(~class_abbr, scales = "free_x", space = "free_x") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
-  scale_fill_manual(values = c(rgb(0, 0, 1, alpha = 0.5), rgb(1, 0, 0, alpha = 0.5)), 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  scale_fill_manual(values = c(rgb(0, 0, 0), rgb(1, 0.5, 0)), 
                     labels = c("Constant-mass metabolic rate", "Varying-mass metabolic rate")) +
-  guides(fill = guide_legend(title = NULL)) + 
-  theme(legend.position = "top") + 
-  scale_y_continuous(name = "Percent difference from initial metabolic rate (%)") + scale_x_discrete(name = "Species")
+  scale_y_continuous(name = "Percent difference from initial metabolic rate (%)") + scale_x_discrete(name = "Species") +
+  geom_text(aes(colour = factor(color)), data = asterisks, label = "*", size = 10) +
+  scale_colour_manual(values = c(rgb(0, 0, 0), rgb(1, 0.5, 0))) +
+  theme(legend.position = "none") +
+  coord_cartesian(ylim = c(0, 65))
+
 class_abbreviation = unique(species_data_plot[,c("Class", "class_abbr")])
 class_abbreviation = class_abbreviation[order(class_abbreviation$class_abbr),]
 
