@@ -156,17 +156,20 @@ species_data$needed_mass_percent = species_data$constantmetrate_mass / species_d
 species_data$actual_mass_percent = species_data$final_mass / species_data$initial_mass * 100
 
 # Plot
-plot(species_data$needed_mass_percent, species_data$actual_mass_percent, xlim = c(60, 137), ylim = c(60, 137), pch = 20, xlab = "Needed mass percentage of initial mass", ylab = "Actual mass percentage of initial mass")
+plot(species_data$needed_mass_percent, species_data$actual_mass_percent, xlim = c(60, 137), ylim = c(60, 137), pch = 20, xlab = "", ylab = "")
+mtext("Compensation mass change", side = 1, line = 2.5, font = 2, cex = 1.5)
+mtext("(needed mass/initial mass) * 100", side = 1, line = 3.5, cex = 0.75)
+mtext("Observed mass change", side = 2, line = 2.8, font = 2, cex = 1.5)
+mtext("(actual mass/initial mass) * 100", side = 2, line = 2, cex = 0.75)
+polygon(c(50, 50, 100), c(50, 100, 100), col = rgb(0, 1, 0, alpha = 0.3), border = NA)
+polygon(c(50, 100, 100, 50), c(100, 100, 140, 140), col = rgb(0, 1, 0, alpha = 0.6), border = NA)
 lines(x = c(0, 500), c(0, 500))
 abline(h = 100, v = 100, lty = 3)
-
-text(113.9082, 131.3315, "mass change for temp-\n erature to have no effect\n on metabolic rate", cex = 0.9, xpd = TRUE)
+text(113.9082, 128, "mass change for temp-\n erature to have no effect\n on metabolic rate", cex = 0.9, xpd = TRUE)
 arrows(x0 = 113.9818, y0 = 122.8864, x1 = 113.7489, y1 = 115.0543, length = 0.08)
-
-text(130.9794, 89.15552, "mass does\n not change")
+text(130.9794, 91, "mass does\n not change")
 arrows(x0 = 130.6321, y0 = 94.34712, x1 = 130.6321, y1 = 99.01680, length = 0.08)
-
-text(115.6321, 64.21285, "mass does not\n need to change")
+text(112, 64.21285, "mass does not\n need to change")
 arrows(x0 = 106.2136, y0 = 64.41466, x1 = 101.9626, y1 = 64.41466, length = 0.08)
 
 # T test for comparing means of actual and needed mass
