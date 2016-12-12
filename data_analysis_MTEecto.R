@@ -127,14 +127,19 @@ ggplot(species_data_plot, aes(x = species, y = value)) +
   geom_bar(aes(fill = key), position = "dodge", stat = "identity") +
   theme_bw() +
   facet_grid(~class_abbr, scales = "free_x", space = "free_x") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   scale_fill_manual(values = c(rgb(0, 0, 0), rgb(0, 1, 0)), 
                     labels = c("Constant-mass metabolic rate", "Varying-mass metabolic rate")) +
-  scale_y_continuous(name = "Percent difference from initial metabolic rate (%)") + scale_x_discrete(name = "Species") +
+  scale_y_continuous(name = "Non-STR & STR metabolic rate changes (%)") + scale_x_discrete(name = "Species") +
   geom_text(aes(colour = factor(color)), data = asterisks, label = "*", size = 10) +
   scale_colour_manual(values = c(rgb(0, 0, 0), rgb(0, 1, 0))) +
   theme(legend.position = "none") +
-  coord_cartesian(ylim = c(0, 65))
+  coord_cartesian(ylim = c(0, 65)) +
+  theme(strip.text = element_text(size = 20),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text = element_text(size = 13), 
+        axis.title = element_text(size = 16))
 
 class_abbreviation = unique(species_data_plot[,c("Class", "class_abbr")])
 class_abbreviation = class_abbreviation[order(class_abbreviation$class_abbr),]
@@ -156,13 +161,14 @@ species_data$needed_mass_percent = species_data$constantmetrate_mass / species_d
 species_data$actual_mass_percent = species_data$final_mass / species_data$initial_mass * 100
 
 # Plot
-plot(species_data$needed_mass_percent, species_data$actual_mass_percent, xlim = c(60, 137), ylim = c(60, 137), pch = 20, xlab = "", ylab = "")
+plot(50, 50, xlim = c(60, 137), ylim = c(60, 137), xlab = "", ylab = "")
 mtext("Compensation mass change", side = 1, line = 2.5, font = 2, cex = 1.5)
 mtext("(needed mass/initial mass) * 100", side = 1, line = 3.5, cex = 0.75)
 mtext("Observed mass change", side = 2, line = 2.8, font = 2, cex = 1.5)
 mtext("(actual mass/initial mass) * 100", side = 2, line = 2, cex = 0.75)
 polygon(c(50, 50, 100), c(50, 100, 100), col = rgb(0, 1, 0, alpha = 0.3), border = NA)
-polygon(c(50, 100, 100, 50), c(100, 100, 140, 140), col = rgb(0, 1, 0, alpha = 0.6), border = NA)
+polygon(c(50, 100, 100, 50), c(100, 100, 140, 140), col = rgb(0, 1, 0), border = NA)
+points(species_data$needed_mass_percent, species_data$actual_mass_percent, pch = 20)
 lines(x = c(0, 500), c(0, 500))
 abline(h = 100, v = 100, lty = 3)
 text(113.9082, 128, "mass change for temp-\n erature to have no effect\n on metabolic rate", cex = 0.9, xpd = TRUE)
@@ -170,7 +176,7 @@ arrows(x0 = 113.9818, y0 = 122.8864, x1 = 113.7489, y1 = 115.0543, length = 0.08
 text(130.9794, 91, "mass does\n not change")
 arrows(x0 = 130.6321, y0 = 94.34712, x1 = 130.6321, y1 = 99.01680, length = 0.08)
 text(112, 64.21285, "mass does not\n need to change")
-arrows(x0 = 106.2136, y0 = 64.41466, x1 = 101.9626, y1 = 64.41466, length = 0.08)
+arrows(x0 = 105.2136, y0 = 64.41466, x1 = 101.9626, y1 = 64.41466, length = 0.08)
 
 # T test for comparing means of actual and needed mass
 t.test(log(species_data$final_mass), log(species_data$constantmetrate_mass), paired = TRUE)
