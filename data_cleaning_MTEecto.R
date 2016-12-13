@@ -115,6 +115,7 @@ three_degree_pairs = subset(all_pairs, all_pairs$temp_diff == 3)
 lookup = original_data[match(three_degree_pairs$studyID, original_data$studyID),]
 three_degree_pairs$species = lookup$Species
 three_degree_pairs$Class = lookup$Class
+three_degree_pairs$ref = lookup$ref
 
 # List of species and number of pairs per species
 species_duplicates = sort(table(three_degree_pairs$species), decreasing=TRUE)
@@ -122,8 +123,8 @@ species_duplicates = sort(table(three_degree_pairs$species), decreasing=TRUE)
 # Add class-specific values to pairs dataset
 store_class_values = class_values[match(three_degree_pairs$Class, class_values$Class),]
 three_degree_pairs = cbind(three_degree_pairs, store_class_values$exponent, store_class_values$Ea)
-colnames(three_degree_pairs)[11] = "exponent"
-colnames(three_degree_pairs)[12] = "Ea"
+colnames(three_degree_pairs)[12] = "exponent"
+colnames(three_degree_pairs)[13] = "Ea"
 
 # List of classes and number of pairs per class
 class_distribution = table(three_degree_pairs$Class)
