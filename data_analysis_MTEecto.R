@@ -162,7 +162,7 @@ species_data$needed_mass_change = (species_data$constantmetrate_mass - species_d
 species_data$actual_mass_change = (species_data$final_mass - species_data$initial_mass) / abs(species_data$initial_mass) * 100
 
 # Plot
-plot(species_data$needed_mass_change, species_data$actual_mass_change, pch = 20, xlim = c(-40, 40), ylim = c(-40, 40), xlab = "Compensation mass change", ylab = "Observed mass change", cex.lab = 1.5)
+plot(species_data$needed_mass_change, species_data$actual_mass_change, pch = 20, xlim = c(-40, 40), ylim = c(-40, 40), xlab = "Compensation mass change (%)", ylab = "Observed mass change (%)", cex.lab = 1.5)
 abline(h = 0, v = 0, col = "gray")
 lines(x = c(-50, 50), c(-50, 50))
 text(28, 12, "mass change for\nconstant metabolic rate", cex = 0.9, xpd = TRUE)
