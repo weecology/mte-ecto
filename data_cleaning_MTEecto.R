@@ -1,3 +1,4 @@
+library(dplyr)
 
 #-------------------------CALCULATE CLASS VALUES----------------------------
 
@@ -87,6 +88,10 @@ original_data = read.csv("MTEEcto_data.csv", stringsAsFactors = FALSE, fileEncod
 original_data = data.frame(as.numeric(rownames(original_data)), original_data)
 colnames(original_data)[1] = "row_names"
 
+# Put temperatures into ascending order
+original_data = original_data %>%
+  arrange(temp)
+
 # Create list of experiment names and respective species
 replicate_list_original=unique(original_data$studyID)
 
@@ -107,49 +112,51 @@ for(current_replicate in replicate_list_original){
 }
 names(all_pairs) = c("studyID", "initial_temp_row", "final_temp_row", "initial_temp", "final_temp", "initial_mass_mg", "final_mass_mg")
 
-# Subset dataset to contain only temperature pairs that differ by 3*
-all_pairs$temp_diff = all_pairs$final_temp - all_pairs$initial_temp
-three_degree_pairs = subset(all_pairs, all_pairs$temp_diff == 3)
+# Subset dataset to contain only the lowest temperature with all its possible pairs
+lowest_deg_pairs = all_pairs %>%
+  group_by(studyID) %>%
+  filter(initial_temp == min(initial_temp))
 
 # Add species to three degree difference pairs
-lookup = original_data[match(three_degree_pairs$studyID, original_data$studyID),]
-three_degree_pairs$species = lookup$Species
-three_degree_pairs$Class = lookup$Class
-three_degree_pairs$ref = lookup$ref
+lookup = original_data[match(lowest_deg_pairs$studyID, original_data$studyID),]
+lowest_deg_pairs$species = lookup$Species
+lowest_deg_pairs$Class = lookup$Class
+lowest_deg_pairs$ref = lookup$ref
 
 # List of species and number of pairs per species
-species_duplicates = sort(table(three_degree_pairs$species), decreasing=TRUE)
+species_duplicates = sort(table(lowest_deg_pairs$species), decreasing=TRUE)
 
 # Add class-specific values to pairs dataset
-store_class_values = class_values[match(three_degree_pairs$Class, class_values$Class),]
-three_degree_pairs = cbind(three_degree_pairs, store_class_values$exponent, store_class_values$Ea)
-colnames(three_degree_pairs)[12] = "exponent"
-colnames(three_degree_pairs)[13] = "Ea"
+store_class_values = class_values[match(lowest_deg_pairs$Class, class_values$Class),]
+lowest_deg_pairs = as.data.frame(lowest_deg_pairs)
+lowest_deg_pairs = cbind(lowest_deg_pairs, store_class_values$exponent, store_class_values$Ea)
+colnames(lowest_deg_pairs)[11] = "exponent"
+colnames(lowest_deg_pairs)[12] = "Ea"
 
 # List of classes and number of pairs per class
-class_distribution = table(three_degree_pairs$Class)
+class_distribution = table(lowest_deg_pairs$Class)
 
 # Change mass units from milligrams to nanograms
-three_degree_pairs$initial_mass = three_degree_pairs$initial_mass_mg * 1000000
-three_degree_pairs$final_mass = three_degree_pairs$final_mass_mg * 1000000
+lowest_deg_pairs$initial_mass = lowest_deg_pairs$initial_mass_mg * 1000000
+lowest_deg_pairs$final_mass = lowest_deg_pairs$final_mass_mg * 1000000
 
 # Separate studyID into study and trial columns
 library(stringr)
-study = str_sub(three_degree_pairs$studyID, 1, -2)
-trial = str_sub(three_degree_pairs$studyID, -1)
-three_degree_pairs = cbind(study, trial, three_degree_pairs)
+study = str_sub(lowest_deg_pairs$studyID, 1, -2)
+trial = str_sub(lowest_deg_pairs$studyID, -1)
+lowest_deg_pairs = cbind(study, trial, lowest_deg_pairs)
 
 #------------------CALCULATE METABOLIC RATES/MASSES--------------------------
 
 ### Use MTE equation: Metabolic Rate = constant * (Mass ^exponent) * e ^ Activation Energy/kt
 
 # Use MTE equation to calculate metabolic rates (initial, final, and w/ constant/initial mass)
-three_degree_pairs$initial_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$initial_temp + 273.15)))))
-three_degree_pairs$final_metrate = (three_degree_pairs$final_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
-three_degree_pairs$constantmass_metrate = (three_degree_pairs$initial_mass ^ three_degree_pairs$exponent) * (exp(((three_degree_pairs$Ea) / (.00008617 * (three_degree_pairs$final_temp + 273.15)))))
+lowest_deg_pairs$initial_metrate = (lowest_deg_pairs$initial_mass ^ lowest_deg_pairs$exponent) * (exp(((lowest_deg_pairs$Ea) / (.00008617 * (lowest_deg_pairs$initial_temp + 273.15)))))
+lowest_deg_pairs$final_metrate = (lowest_deg_pairs$final_mass ^ lowest_deg_pairs$exponent) * (exp(((lowest_deg_pairs$Ea) / (.00008617 * (lowest_deg_pairs$final_temp + 273.15)))))
+lowest_deg_pairs$constantmass_metrate = (lowest_deg_pairs$initial_mass ^ lowest_deg_pairs$exponent) * (exp(((lowest_deg_pairs$Ea) / (.00008617 * (lowest_deg_pairs$final_temp + 273.15)))))
 
 # Use rearranged MTE equation to calculate mass w/ constant/initial metabolic rate
-three_degree_pairs$constantmetrate_mass = (three_degree_pairs$initial_metrate / (exp(three_degree_pairs$Ea / (.00008617 * (three_degree_pairs$final_temp + 273.15))))) ^ (1 / three_degree_pairs$exponent)
+lowest_deg_pairs$constantmetrate_mass = (lowest_deg_pairs$initial_metrate / (exp(lowest_deg_pairs$Ea / (.00008617 * (lowest_deg_pairs$final_temp + 273.15))))) ^ (1 / lowest_deg_pairs$exponent)
 
 # Create CSV of cleaned and prepared data
-write.csv(three_degree_pairs, file = "clean_data_MTEecto.csv")
+write.csv(lowest_deg_pairs, file = "clean_data_MTEecto_expanded.csv")
