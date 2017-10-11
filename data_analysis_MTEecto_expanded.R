@@ -116,3 +116,53 @@ ggplot(pairs_data_by_sp_temp, aes(x = -x_axis_mean, y = y_axis_mean)) +
   labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+### Compensation mass plot
+pairs_data$needed_mass_change = (pairs_data$constantmetrate_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
+pairs_data$actual_mass_change = (pairs_data$final_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
+
+ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
+  geom_point() +
+  coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_hline(yintercept = 0, color = "grey") +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_abline(intercept = 0, slope = 1)
+
+pairs_data_test = pairs_data %>% 
+  mutate(equal_interval = case_when(
+    interval < 10 ~ "small", 
+    interval >= 10 & interval < 20 ~ "medium", 
+    interval >= 20 ~ "large"
+  ))
+
+ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, color = equal_interval)) +
+  geom_point() +
+  coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_hline(yintercept = 0, color = "grey") +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_abline(intercept = 0, slope = 1)
+
+pairs_data_test = pairs_data_test %>%
+  arrange(interval) %>% 
+  mutate(row_num = 1:nrow(pairs_data_test)) %>% 
+  mutate(equal_group = case_when(
+    row_num < (nrow(pairs_data_test) / 3) ~ "small", 
+    row_num >= (nrow(pairs_data_test) / 3) & row_num < ((nrow(pairs_data_test) / 3) * 2) ~ "medium", 
+    row_num >= (nrow(pairs_data_test) / 3 * 2) ~ "large"
+  ))
+
+ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, color = equal_group)) +
+  geom_point() +
+  coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_hline(yintercept = 0, color = "grey") +
+  geom_vline(xintercept = 0, color = "grey") +
+  geom_abline(intercept = 0, slope = 1)
+
+ggplot(pairs_data_test, aes(interval, fill = equal_group)) +
+  geom_histogram()
