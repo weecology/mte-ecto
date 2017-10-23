@@ -56,19 +56,15 @@ ggplot(pairs_data, aes(x = temp_prod, y = -x_axis)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### By mass
-pairs_data = pairs_data %>% 
-  arrange(initial_mass) %>%
-  mutate(row_num = 1:nrow(pairs_data)) %>%
-  mutate(size_category = case_when(
-    row_num < (nrow(pairs_data) / 3) ~ "small", 
-    row_num >= (nrow(pairs_data) / 3) & row_num <= ((nrow(pairs_data) / 3) * 2) ~ "medium", 
-    row_num > ((nrow(pairs_data) / 3) * 2) ~ "large"))
+pairs_data$line_value = pairs_data$line_slope * -pairs_data$x_axis + pairs_data$line_intercept
+pairs_data$mass_residual = pairs_data$y_axis - pairs_data$line_value
 
-ggplot(pairs_data, aes(x = -x_axis, y = y_axis, color = size_category)) +
+ggplot(pairs_data, aes(x = log(initial_mass), y = mass_residual)) +
   geom_point() +
-  geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
-  facet_wrap(~Class) +
-  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~Class, scales = "free_x") +
+  ylim(-1.4, 1.4) +
+  labs(x = "log(mass)", y = "Mass residual") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
