@@ -13,7 +13,7 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
   geom_point() +
   geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -23,22 +23,26 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
   geom_abline(aes(slope = line_slope, intercept = line_intercept)) +
   geom_smooth(method = "lm", se = FALSE, size = .6) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### By temperature difference and absolute temperature
-pairs_data$interval = pairs_data$final_temp - pairs_data$initial_temp
-pairs_data = pairs_data %>% mutate(interval_type = ifelse(interval < 16, "small", "large"))
-pairs_data$absolute = pairs_data$initial_temp
-pairs_data = pairs_data %>% mutate(absolute_type = ifelse(absolute < 14, "small", "large"))
-pairs_data$interval_absolute = paste(pairs_data$interval_type, pairs_data$absolute_type, sep = ", ")
+#TODO: cowplot these together? 
+pairs_data$temp_diff = pairs_data$final_temp - pairs_data$initial_temp
+pairs_data$temp_prod = pairs_data$final_temp * pairs_data$initial_temp
 
-ggplot(pairs_data, aes(x = -x_axis, y = y_axis, color = interval_absolute)) +
+ggplot(pairs_data, aes(x = temp_diff, y = -x_axis)) +
   geom_point() +
-  geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature difference \n T2 - T1", y = "Temperature axis \n (T2-T1)/(T1*T2)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+ggplot(pairs_data, aes(x = temp_prod, y = -x_axis)) +
+  geom_point() +
+  facet_wrap(~Class) +
+  labs(x = "Temperature product \n T2 * T1", y = "Temperature axis \n (T2-T1)/(T1*T2)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -55,7 +59,7 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis, color = size_category)) +
   geom_point() +
   geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -73,7 +77,7 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
   geom_abline(aes(slope = line_slope, intercept = mass_intercept_3), color = "grey") +
   geom_abline(aes(slope = line_slope, intercept = mass_intercept_4), color = "grey") +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -91,7 +95,7 @@ ggplot(pairs_data_by_sp_temp, aes(x = -x_axis_mean, y = y_axis_mean)) +
   geom_point() +
   geom_abline(data = pairs_data_by_sp_temp, aes(slope = line_slope, intercept = line_intercept)) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -102,7 +106,7 @@ ggplot(pairs_data_by_sp_temp, aes(x = -x_axis_mean, y = y_axis_mean)) +
   #geom_errorbarh(aes(xmin = -(x_axis_mean - x_axis_sd), xmax = -(x_axis_mean + x_axis_sd)),  height = .5, color = "orange") +
   geom_abline(data = pairs_data_by_sp_temp, aes(slope = line_slope, intercept = line_intercept)) +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
