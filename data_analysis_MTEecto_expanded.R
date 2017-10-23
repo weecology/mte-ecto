@@ -130,14 +130,14 @@ ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_abline(intercept = 0, slope = 1)
 
-pairs_data_test = pairs_data %>% 
+pairs_data = pairs_data %>% 
   mutate(equal_interval = case_when(
     interval < 10 ~ "small", 
     interval >= 10 & interval < 20 ~ "medium", 
     interval >= 20 ~ "large"
   ))
 
-ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, color = equal_interval)) +
+ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change, color = equal_interval)) +
   geom_point() +
   coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
   theme_bw() +
@@ -146,16 +146,16 @@ ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, colo
   geom_vline(xintercept = 0, color = "grey") +
   geom_abline(intercept = 0, slope = 1)
 
-pairs_data_test = pairs_data_test %>%
+pairs_data = pairs_data %>%
   arrange(interval) %>% 
-  mutate(row_num = 1:nrow(pairs_data_test)) %>% 
+  mutate(row_num = 1:nrow(pairs_data)) %>% 
   mutate(equal_group = case_when(
-    row_num < (nrow(pairs_data_test) / 3) ~ "small", 
-    row_num >= (nrow(pairs_data_test) / 3) & row_num < ((nrow(pairs_data_test) / 3) * 2) ~ "medium", 
-    row_num >= (nrow(pairs_data_test) / 3 * 2) ~ "large"
+    row_num < (nrow(pairs_data) / 3) ~ "small", 
+    row_num >= (nrow(pairs_data) / 3) & row_num < ((nrow(pairs_data) / 3) * 2) ~ "medium", 
+    row_num >= (nrow(pairs_data) / 3 * 2) ~ "large"
   ))
 
-ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, color = equal_group)) +
+ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change, color = equal_group)) +
   geom_point() +
   coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
   theme_bw() +
@@ -164,5 +164,5 @@ ggplot(pairs_data_test, aes(x = needed_mass_change, y = actual_mass_change, colo
   geom_vline(xintercept = 0, color = "grey") +
   geom_abline(intercept = 0, slope = 1)
 
-ggplot(pairs_data_test, aes(interval, fill = equal_group)) +
+ggplot(pairs_data, aes(interval, fill = equal_group)) +
   geom_histogram()
