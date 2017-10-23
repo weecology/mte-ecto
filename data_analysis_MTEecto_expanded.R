@@ -60,29 +60,18 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis, color = size_category)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### With mass percent change lines
-percent_value = 30
-mass_ratio = (percent_value / 100) + 1
-pairs_data$intercept_increase_1 = pairs_data$exponent * log(mass_ratio)
-
-percent_value = 50
-mass_ratio = (percent_value / 100) + 1
-pairs_data$intercept_increase_2 = pairs_data$exponent * log(mass_ratio)
-
-percent_value = -30
-mass_ratio = (percent_value / 100) + 1
-pairs_data$intercept_decrease_1 = pairs_data$exponent * log(mass_ratio)
-
-percent_value = -50
-mass_ratio = (percent_value / 100) + 1
-pairs_data$intercept_decrease_2 = pairs_data$exponent * log(mass_ratio)
+pairs_data$mass_intercept_1 = pairs_data$exponent * log(2)
+pairs_data$mass_intercept_2 = pairs_data$exponent * log(1.5)
+pairs_data$mass_intercept_3 = pairs_data$exponent * log(0.75)
+pairs_data$mass_intercept_4 = pairs_data$exponent * log(0.5)
 
 ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
   geom_point() +
   geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
-  geom_abline(aes(slope = line_slope, intercept = intercept_increase_1), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = intercept_increase_2), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = intercept_decrease_1), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = intercept_decrease_2), color = "grey") +
+  geom_abline(aes(slope = line_slope, intercept = mass_intercept_1), color = "grey") +
+  geom_abline(aes(slope = line_slope, intercept = mass_intercept_2), color = "grey") +
+  geom_abline(aes(slope = line_slope, intercept = mass_intercept_3), color = "grey") +
+  geom_abline(aes(slope = line_slope, intercept = mass_intercept_4), color = "grey") +
   facet_wrap(~Class) +
   labs(x = "Temperature difference \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
