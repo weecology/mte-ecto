@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(lme4)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
@@ -39,19 +40,11 @@ ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
 ### By temperature difference and absolute temperature
 #TODO: cowplot these together? 
 pairs_data$temp_diff = pairs_data$final_temp - pairs_data$initial_temp
-pairs_data$temp_prod = pairs_data$final_temp * pairs_data$initial_temp
 
 ggplot(pairs_data, aes(x = temp_diff, y = -x_axis)) +
   geom_point() +
   facet_wrap(~Class) +
   labs(x = "Temperature difference \n T2 - T1", y = "Temperature axis \n (T2-T1)/(T1*T2)") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplot(pairs_data, aes(x = temp_prod, y = -x_axis)) +
-  geom_point() +
-  facet_wrap(~Class) +
-  labs(x = "Temperature product \n T2 * T1", y = "Temperature axis \n (T2-T1)/(T1*T2)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
@@ -68,6 +61,15 @@ ggplot(pairs_data, aes(x = log(initial_mass), y = mass_residual)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
+ggplot(pairs_data, aes(x = initial_temp, y = mass_residual)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~Class, scales = "free_x") +
+  ylim(-1.4, 1.4) +
+  labs(x = "Initial temp", y = "Mass residual") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
 ### Compensation mass plot
 pairs_data$needed_mass_change = (pairs_data$constantmetrate_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
 pairs_data$actual_mass_change = (pairs_data$final_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
@@ -80,3 +82,8 @@ ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
   geom_hline(yintercept = 0, color = "grey") +
   geom_vline(xintercept = 0, color = "grey") +
   geom_abline(intercept = 0, slope = 1)
+
+### Residuals model for species variation
+
+pairs_data$residual = pairs_data$exponent * log(pairs_data$initial_mass / pairs_data$final_mass)
+residual_model = lmer(residual ~ log(initial_mass) + initial_temp + (1|species) + (1|Class) + (1|studyID) + (1|study), data = pairs_data)
