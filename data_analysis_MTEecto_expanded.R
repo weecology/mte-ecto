@@ -4,10 +4,14 @@ library(lme4)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
-pairs_data$x_axis = (1/(pairs_data$final_temp + 273.15)) - (1/(pairs_data$initial_temp + 273.15))
-pairs_data$y_axis = log(pairs_data$final_metrate) - log(pairs_data$initial_metrate)
-pairs_data$line_slope = -pairs_data$Ea / .00008617
-pairs_data$line_intercept = 0
+pairs_data$mass_constant_slope = -pairs_data$Ea / .00008617
+pairs_data$mass_constant_intercept = 0
+pairs_data$initial_temp_C = pairs_data$initial_temp + 273.15
+pairs_data$final_temp_C = pairs_data$final_temp + 273.15
+pairs_data$temp_axis_num = -(pairs_data$initial_temp_C - pairs_data$final_temp_C)
+pairs_data$temp_axis_den = pairs_data$initial_temp_C * pairs_data$final_temp_C
+pairs_data$temp_axis = pairs_data$temp_axis_num / pairs_data$temp_axis_den
+pairs_data$metab_axis = log(pairs_data$final_metrate) - log(pairs_data$initial_metrate)
 
 ### With mass percent change lines
 pairs_data$mass_intercept_1 = pairs_data$exponent * log(2)
@@ -15,44 +19,46 @@ pairs_data$mass_intercept_2 = pairs_data$exponent * log(1.5)
 pairs_data$mass_intercept_3 = pairs_data$exponent * log(0.75)
 pairs_data$mass_intercept_4 = pairs_data$exponent * log(0.5)
 
-ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
+ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   geom_point() +
-  geom_abline(data = pairs_data, aes(slope = line_slope, intercept = line_intercept)) +
-  geom_abline(aes(slope = line_slope, intercept = mass_intercept_1), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = mass_intercept_2), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = mass_intercept_3), color = "grey") +
-  geom_abline(aes(slope = line_slope, intercept = mass_intercept_4), color = "grey") +
+  geom_abline(data = pairs_data, aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_1), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_2), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_3), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_4), color = "grey") +
   facet_wrap(~Class) +
-  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n -(T1-T2)/(T1*T2)", y = "Metabolic rate difference \n log(R2) - log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### With data trend line
-ggplot(pairs_data, aes(x = -x_axis, y = y_axis)) +
+ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   geom_point() +
-  geom_abline(aes(slope = line_slope, intercept = line_intercept)) +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
   geom_smooth(method = "lm", se = FALSE, size = .6) +
   facet_wrap(~Class) +
-  labs(x = "Temperature axis \n (T2-T1)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
+  labs(x = "Temperature axis \n (T1-T2)/(T1*T2)", y = "Metabolic rate difference \n log(R2)-log(R1)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-### By temperature difference and absolute temperature
-#TODO: cowplot these together? 
-pairs_data$temp_diff = pairs_data$final_temp - pairs_data$initial_temp
-
-ggplot(pairs_data, aes(x = temp_diff, y = -x_axis)) +
+### Temp difference mostly affects x-axis
+ggplot(pairs_data, aes(x = temp_axis_num, y = temp_axis)) +
   geom_point() +
   facet_wrap(~Class) +
-  labs(x = "Temperature difference \n T2 - T1", y = "Temperature axis \n (T2-T1)/(T1*T2)") +
+  labs(x = "Temperature difference \n T1 - T2", y = "Temperature axis \n (T1-T2)/(T1*T2)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### By mass
-pairs_data$line_value = pairs_data$line_slope * -pairs_data$x_axis + pairs_data$line_intercept
-pairs_data$mass_residual = pairs_data$y_axis - pairs_data$line_value
 
-ggplot(pairs_data, aes(x = log(initial_mass), y = mass_residual)) +
+#TODO: sort out the residuals math! 
+#point = pairs_data$metab_axis
+#line = pairs_data$mass_constant_slope * pairs_data$temp_axis
+pairs_data$residual1 = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
+
+pairs_data$residual2 = pairs_data$exponent * (log(pairs_data$final_mass) - log(pairs_data$initial_mass))
+
+ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   facet_wrap(~Class, scales = "free_x") +
@@ -61,7 +67,7 @@ ggplot(pairs_data, aes(x = log(initial_mass), y = mass_residual)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggplot(pairs_data, aes(x = initial_temp, y = mass_residual)) +
+ggplot(pairs_data, aes(x = initial_temp, y = residual)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   facet_wrap(~Class, scales = "free_x") +
@@ -84,6 +90,5 @@ ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
   geom_abline(intercept = 0, slope = 1)
 
 ### Residuals model for species variation
-
 pairs_data$residual = pairs_data$exponent * log(pairs_data$initial_mass / pairs_data$final_mass)
 residual_model = lmer(residual ~ log(initial_mass) + initial_temp + (1|species) + (1|Class) + (1|studyID) + (1|study), data = pairs_data)
