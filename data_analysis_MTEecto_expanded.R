@@ -13,6 +13,17 @@ pairs_data$temp_axis_den = pairs_data$initial_temp_K * pairs_data$final_temp_K
 pairs_data$temp_axis = pairs_data$temp_axis_num / pairs_data$temp_axis_den
 pairs_data$metab_axis = log(pairs_data$final_metrate) - log(pairs_data$initial_metrate)
 
+### All classes together
+ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
+  geom_point() +
+  geom_abline(data = pairs_data, aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
+  labs(x = "Temperature axis \n -(T1-T2)/(T1*T2)", y = "Metabolic rate difference \n log(R2) - log(R1)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+### Variance explained by no mass change line
+r2 = 1 - var(with(pairs_data, metab_axis - (temp_axis * mass_constant_slope))) / var(with(pairs_data, metab_axis))
+
 ### With mass percent change lines
 pairs_data$mass_intercept_1 = pairs_data$exponent * log(2)
 pairs_data$mass_intercept_2 = pairs_data$exponent * log(1.5)
