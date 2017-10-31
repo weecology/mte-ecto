@@ -6,10 +6,10 @@ pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALS
 
 pairs_data$mass_constant_slope = -pairs_data$Ea / .00008617
 pairs_data$mass_constant_intercept = 0
-pairs_data$initial_temp_C = pairs_data$initial_temp + 273.15
-pairs_data$final_temp_C = pairs_data$final_temp + 273.15
-pairs_data$temp_axis_num = -(pairs_data$initial_temp_C - pairs_data$final_temp_C)
-pairs_data$temp_axis_den = pairs_data$initial_temp_C * pairs_data$final_temp_C
+pairs_data$initial_temp_K = pairs_data$initial_temp + 273.15
+pairs_data$final_temp_K = pairs_data$final_temp + 273.15
+pairs_data$temp_axis_num = -(pairs_data$initial_temp_K - pairs_data$final_temp_K)
+pairs_data$temp_axis_den = pairs_data$initial_temp_K * pairs_data$final_temp_K
 pairs_data$temp_axis = pairs_data$temp_axis_num / pairs_data$temp_axis_den
 pairs_data$metab_axis = log(pairs_data$final_metrate) - log(pairs_data$initial_metrate)
 
@@ -50,13 +50,8 @@ ggplot(pairs_data, aes(x = temp_axis_num, y = temp_axis)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ### By mass
-
-#TODO: sort out the residuals math! 
-#point = pairs_data$metab_axis
-#line = pairs_data$mass_constant_slope * pairs_data$temp_axis
-pairs_data$residual1 = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
-
-pairs_data$residual2 = pairs_data$exponent * (log(pairs_data$final_mass) - log(pairs_data$initial_mass))
+#pairs_data$residual_alt = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
+pairs_data$residual = pairs_data$exponent * (log(pairs_data$final_mass) - log(pairs_data$initial_mass))
 
 ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
   geom_point() +
@@ -67,14 +62,17 @@ ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggplot(pairs_data, aes(x = initial_temp, y = residual)) +
+ggplot(pairs_data, aes(x = initial_temp_K, y = residual)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   facet_wrap(~Class, scales = "free_x") +
   ylim(-1.4, 1.4) +
-  labs(x = "Initial temp", y = "Mass residual") +
+  labs(x = "Initial temperature (K)", y = "Mass residual") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+### Residuals model for species variation
+residual_model = lmer(residual ~ log(initial_mass) + initial_temp + temp_axis + (1|species) + (1|Class) + (1|studyID) + (1|study), data = pairs_data)
 
 ### Compensation mass plot
 pairs_data$needed_mass_change = (pairs_data$constantmetrate_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
@@ -89,6 +87,3 @@ ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
   geom_vline(xintercept = 0, color = "grey") +
   geom_abline(intercept = 0, slope = 1)
 
-### Residuals model for species variation
-pairs_data$residual = pairs_data$exponent * log(pairs_data$initial_mass / pairs_data$final_mass)
-residual_model = lmer(residual ~ log(initial_mass) + initial_temp + (1|species) + (1|Class) + (1|studyID) + (1|study), data = pairs_data)
