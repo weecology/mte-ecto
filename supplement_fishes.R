@@ -13,16 +13,12 @@ pairs_data$metab_axis = log(pairs_data$final_metrate) - log(pairs_data$initial_m
 
 fishes_data = filter(pairs_data, Class == "Actinoperygii")
 
-fishes_data$exponent_adjusted_lower = 0.0417 * (1/(.0000862*(fishes_data$initial_temp + 273.15))) - 0.8923
-fishes_data$exponent_adjusted_higher = 0.0417 * (1/(.0000862*(fishes_data$final_temp + 273.15))) - 0.8923
+fishes_data$initial_exponent = 0.0417 * (1/(.0000862*(fishes_data$initial_temp + 273.15))) - 0.8923
+fishes_data$final_exponent = 0.0417 * (1/(.0000862*(fishes_data$final_temp + 273.15))) - 0.8923
 
-fishes_data$initial_metrate_lower = (fishes_data$initial_mass ^ fishes_data$exponent_adjusted_lower) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$initial_temp + 273.15)))))
-fishes_data$final_metrate_lower = (fishes_data$final_mass ^ fishes_data$exponent_adjusted_lower) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$final_temp + 273.15)))))
-fishes_data$metab_axis_lower = fishes_data$final_metrate_lower - fishes_data$initial_metrate_lower
-
-fishes_data$initial_metrate_higher = (fishes_data$initial_mass ^ fishes_data$exponent_adjusted_higher) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$initial_temp + 273.15)))))
-fishes_data$final_metrate_higher = (fishes_data$final_mass ^ fishes_data$exponent_adjusted_higher) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$final_temp + 273.15)))))
-fishes_data$metab_axis_higher = fishes_data$final_metrate_higher - fishes_data$initial_metrate_higher
+fishes_data$initial_metrate_adjusted = (fishes_data$initial_mass ^ fishes_data$initial_exponent) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$initial_temp + 273.15)))))
+fishes_data$final_metrate_adjusted = (fishes_data$initial_mass ^ fishes_data$final_exponent) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$final_temp + 273.15)))))
+fishes_data$metab_axis_adjusted = fishes_data$final_metrate_adjusted - fishes_data$initial_metrate_adjusted
 
 fishes_data$mass_intercept_1 = fishes_data$exponent * log(2)
 fishes_data$mass_intercept_2 = fishes_data$exponent * log(1.5)
@@ -31,8 +27,8 @@ fishes_data$mass_intercept_4 = fishes_data$exponent * log(0.5)
 
 ggplot(fishes_data, aes(x = temp_axis, y = metab_axis)) +
   geom_point() +
-  geom_point(aes(x = temp_axis, y = metab_axis_lower), color = "red", alpha = 0.7) +
-  geom_point(aes(x = temp_axis, y = metab_axis_higher), pch = 4) +
+  geom_point(aes(x = temp_axis, y = metab_axis_adjusted), color = "red", alpha = 0.7) +
+  geom_abline(intercept = 0, lty = 3) +
   coord_cartesian(xlim = c(0, 0.0003), ylim = c(-1, 2)) +
   geom_abline(data = fishes_data, aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
   geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_1), color = "grey") +
