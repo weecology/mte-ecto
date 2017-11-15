@@ -31,8 +31,22 @@ ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
+### Variance plot with trend line
+pairs_data = pairs_data %>% 
+  mutate(point_color = ifelse(Class == "Amphibia", "Amphibians", "Non-Amphibians"))
+
+ggplot(pairs_data, aes(x = temp_axis * mass_constant_slope, y = metab_axis)) +
+  geom_point(aes(color = point_color)) +
+  scale_color_manual(values = c("red", "black")) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_smooth(method = "lm", se = FALSE, size = .6) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
 ### Variance explained by no mass change line
-r2 = 1 - var(with(pairs_data, metab_axis - (temp_axis * mass_constant_slope))) / var(with(pairs_data, metab_axis))
+unexplained_variance = var(with(pairs_data, metab_axis - (temp_axis * mass_constant_slope)))
+total_variance = var(with(pairs_data, metab_axis))
+r2 = 1 - unexplained_variance / total_variance
 
 ### With data trend line
 ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
