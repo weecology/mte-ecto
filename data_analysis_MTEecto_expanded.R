@@ -37,9 +37,12 @@ pairs_data = pairs_data %>%
 
 ggplot(pairs_data, aes(x = temp_axis * mass_constant_slope, y = metab_axis)) +
   geom_point(aes(color = point_color)) +
-  scale_color_manual(values = c("red", "black")) +
-  geom_abline(intercept = 0, slope = 1) +
-  geom_smooth(method = "lm", se = FALSE, size = .6) +
+  scale_color_manual(values = c("red", "black",  "black", "blue")) +
+  geom_abline(aes(color = "Model", intercept = 0, slope = 1)) +
+  geom_smooth(aes(color = "Trend"), method = "lm", se = FALSE, size = .6) +
+  guides(color = guide_legend(override.aes = list(linetype = c("blank", "blank", "solid", "solid"), 
+                                                  shape = c(16, 16, NA, NA)))) +
+  labs(x = "Expected metabolic rate change", y = "Observed metabolic rate change", color = "") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
