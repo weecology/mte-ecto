@@ -1,6 +1,7 @@
 library(dplyr)
 library(ggplot2)
 library(lme4)
+library(grid)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
@@ -19,17 +20,57 @@ pairs_data$expect_metrate_change = pairs_data$temp_axis * pairs_data$mass_consta
 pairs_data$observ_metrate_change = pairs_data$metab_axis
 
 ### MAIN: Compensation mass plot
-ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
+x_text1 = textGrob("Decreasing needed mass", gp = gpar(cex = .8))
+x_text2 = textGrob("Increasing needed mass", gp = gpar(cex = .8))
+y_text1 = textGrob("Increasing actual mass", gp = gpar(cex = .8), rot = 90)
+y_text2 = textGrob("Decreasing actual mass", gp = gpar(cex = .8), rot = 90)
+
+plot_comp_mass = ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_change)) +
   geom_point() +
   coord_cartesian(xlim = c(-100, 100), ylim = c(-100, 100)) +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   geom_hline(yintercept = 0, color = "grey") +
   geom_vline(xintercept = 0, color = "grey") +
-  geom_abline(intercept = 0, slope = 1)
+  geom_abline(intercept = 0, slope = 1) + 
+  labs(x = "Compensation mass change (%)", y = "Observed mass change (%)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        axis.title.x = element_text(face = "bold", margin = unit(c(1.65, 0, 0, 0), "cm")), 
+        axis.title.y = element_text(face = "bold", margin = unit(c(0, 1.55, 0, 0), "cm"))) +
+  annotation_custom(grob = x_text1, xmin = -50, xmax = -50, ymin = -130, ymax = -130) +
+  annotation_custom(grob = x_text2, xmin = 50, xmax = 50, ymin = -130, ymax = -130) +
+  annotation_custom(grob = y_text1, xmin = -135, xmax = -135, ymin = 50, ymax = 50) +
+  annotation_custom(grob = y_text2, xmin = -135, xmax = -135, ymin = -50, ymax = -50) +
+  annotation_custom(grob = linesGrob(arrow = arrow(angle = 20, length = unit(0.15, "inches"), type = "open", ends = "first")), xmin = -100, xmax = -10, ymin = -135, ymax = -135) +
+  annotation_custom(grob = linesGrob(arrow = arrow(angle = 20, length = unit(0.15, "inches"), type = "open", ends = "last")), xmin = 100, xmax = 10, ymin = -135, ymax = -135) +
+  annotation_custom(grob = linesGrob(arrow = arrow(angle = 20, length = unit(0.15, "inches"), type = "open", ends = "last")), xmin = -140, xmax = -140, ymin = 10, ymax = 100) +
+  annotation_custom(grob = linesGrob(arrow = arrow(angle = 20, length = unit(0.15, "inches"), type = "open", ends = "first")), xmin = -140, xmax = -140, ymin = -100, ymax = -10) +
+  annotate("text", x = 75, y = 25, label = "Actual mass equals\n needed mass") +
+  annotation_custom(grob = linesGrob(arrow = arrow(angle = 20, length = unit(0.15, "inches"), type = "open", ends = "first")), xmin = 25, xmax = 50, ymin = 20, ymax = 20)
+
+plot_comp_mass <- ggplotGrob(plot_comp_mass)
+plot_comp_mass$layout$clip[plot_comp_mass$layout$name=="panel"] <- "off"
+grid.draw(plot_comp_mass)
+ggsave("figures/fig2.png", plot = plot_comp_mass, width = 6, height = 6)
 
 ### STATS: Mass comparison t-test
+mean(pairs_data$actual_mass_change)
+sd(pairs_data$actual_mass_change)
+
+comp_mass_df = data.frame(decrease_insuff = length(which((pairs_data$actual_mass_change > pairs_data$needed_mass_change) & pairs_data$actual_mass_change < 0)), 
+                          decrease_exceed = length(which(pairs_data$actual_mass_change < pairs_data$needed_mass_change)), 
+                          increase = length(which(pairs_data$actual_mass_change > 0)), 
+                          same = length(which(pairs_data$actual_mass_change == 0)))
+comp_mass_df = data.frame(t(comp_mass_df))
+comp_mass_df = comp_mass_df %>% 
+  rename(number = t.comp_mass_df.) %>% 
+  mutate(percent = number / nrow(pairs_data) * 100)
+
 t.test(log(pairs_data$final_mass), log(pairs_data$constantmetrate_mass), paired = TRUE)
+
+pairs_data_subset = pairs_data %>% 
+  group_by(studyID) %>% 
+  filter(temp_axis_num == min(temp_axis_num))
+t.test(log(pairs_data_subset$final_mass), log(pairs_data_subset$constantmetrate_mass), paired = TRUE)
 
 ### MAIN: Variance plot with trend line
 pairs_data = pairs_data %>% 
