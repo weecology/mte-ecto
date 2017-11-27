@@ -50,7 +50,7 @@ plot_comp_mass = ggplot(pairs_data, aes(x = needed_mass_change, y = actual_mass_
 plot_comp_mass <- ggplotGrob(plot_comp_mass)
 plot_comp_mass$layout$clip[plot_comp_mass$layout$name=="panel"] <- "off"
 grid.draw(plot_comp_mass)
-ggsave("figures/fig2.png", plot = plot_comp_mass, width = 6, height = 6)
+ggsave("figures/fig2.jpg", plot = plot_comp_mass, width = 6, height = 6)
 
 ### STATS: Mass comparison t-test
 mean(pairs_data$actual_mass_change)
@@ -74,26 +74,21 @@ t.test(log(pairs_data_subset$final_mass), log(pairs_data_subset$constantmetrate_
 
 ### MAIN: Variance plot with trend line
 pairs_data = pairs_data %>% 
-  mutate(point_color = ifelse(Class == "Amphibia", "Amphibians", "Non-Amphibians"))
+  mutate(point_color = ifelse(Class == "Amphibia", "Amphibians", "Non-amphibians"))
 
-ggplot(pairs_data, aes(x = expect_metrate_change, y = observ_metrate_change)) +
+plot_metrates = ggplot(pairs_data, aes(x = expect_metrate_change, y = observ_metrate_change)) +
   geom_point(aes(color = point_color)) +
-  scale_color_manual(values = c("red", "black",  "black", "blue")) +
-  geom_abline(aes(color = "Model", intercept = 0, slope = 1)) +
-  geom_smooth(aes(color = "Trend"), method = "lm", se = FALSE, size = .6) +
-  guides(color = guide_legend(override.aes = list(linetype = c("blank", "blank", "solid", "solid"), 
-                                                  shape = c(16, 16, NA, NA)))) +
-  labs(x = "Expected metabolic rate change", y = "Observed metabolic rate change", color = "") +
+  scale_color_manual(values = c("dark orange", "blue",  "black")) +
+  geom_abline(aes(color = "Size does not change", intercept = 0, slope = 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("blank", "blank", "solid"), 
+                                                  shape = c(16, 16, NA)))) +
+  labs(x = "Metabolic rate change with constant size", y = "Metabolic rate change with varying size", color = "") +
   theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
 
-### SUPPLEMENT: Temp difference mostly affects x-axis
-ggplot(pairs_data, aes(x = temp_axis_num, y = temp_axis)) +
-  geom_point() +
-  facet_wrap(~Class) +
-  labs(x = "Temperature difference \n T1 - T2", y = "Temperature axis \n (T1-T2)/(T1*T2)") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+ggsave("figures/fig3.jpg", plot = plot_metrates)
 
 ### STATS: Variance explained by no mass change line
 unexplained_variance = var(with(pairs_data, observ_metrate_change - expect_metrate_change))
@@ -106,7 +101,17 @@ pairs_data$mass_intercept_2 = pairs_data$exponent * log(1.5)
 pairs_data$mass_intercept_3 = pairs_data$exponent * log(0.75)
 pairs_data$mass_intercept_4 = pairs_data$exponent * log(0.5)
 
-ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
+annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data){
+  layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+        geom = ggplot2:::GeomCustomAnn,
+        inherit.aes = TRUE, params = list(grob = grob, 
+                                          xmin = xmin, xmax = xmax, 
+                                          ymin = ymin, ymax = ymax))
+}
+
+data_1 = data.frame(Class = "Malacostraca")
+
+plot_classes = ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   geom_point() +
   geom_abline(data = pairs_data, aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
   geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_1), color = "grey") +
@@ -114,7 +119,51 @@ ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_3), color = "grey") +
   geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_4), color = "grey") +
   facet_wrap(~Class) +
-  labs(x = "Temperature axis \n -(T1-T2)/(T1*T2)", y = "Metabolic rate difference \n log(R2) - log(R1)") +
+  labs(x = expression(atop("Increasing temperature difference", -(T[1]-T[2])/(T[1]*T[2]))), 
+       y = expression(atop("Metabolic rate change with varying size", log(R[2]) - log(R[1])))) +
+  #annotation_custom2(grob = linesGrob(arrow = arrow(type = "open", ends = "last")), xmin = 0, xmax = .0003, ymin = -2, ymax = -2, data = data_1) +
+  annotation_custom2(grob = linesGrob(), xmin = 0, xmax = .0003, ymin = -2, ymax = -2, data = data_1) +
+  theme_bw() +
+  theme(axis.title.x = element_text(margin = unit(c(2, 0, 0, 0), "cm")),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+plot_classes <- ggplotGrob(plot_classes)
+plot_classes$layout$clip[plot_classes$layout$name=="panel"] <- "off"
+grid.draw(plot_classes)
+
+#Code from here: https://stackoverflow.com/questions/10525957/how-to-draw-lines-outside-of-plot-area-in-ggplot2
+test = data.frame(
+  group=c(rep(1,6), rep(2,6)),
+  subgroup=c( 1,1,1,2,2,2,1,1,1,2,2,2),
+  category=c( rep(1:3, 4)),
+  count=c( 10,80,10,5,90,5,  10,80,10,5,90,5   )
+)
+p <- ggplot(test) +
+  geom_bar(aes(subgroup, count, fill = category), stat = "identity") +
+  facet_grid(. ~ group) +
+  theme(legend.position = "none",  
+        plot.margin = unit(c(1,5,1,1), "lines"))
+data = data.frame(group=2)
+annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data){
+    layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+          geom = ggplot2:::GeomCustomAnn,
+          inherit.aes = TRUE, params = list(grob = grob, 
+                                            xmin = xmin, xmax = xmax, 
+                                            ymin = ymin, ymax = ymax))
+  }
+p1 = p + annotation_custom2(linesGrob(), xmin = 2.75, xmax = 2.75, ymin = 85, ymax = 100, data = data)
+gt <- ggplotGrob(p1)
+gt$layout[grepl("panel", gt$layout$name), ]$clip <- "off"
+grid.draw(gt)
+
+
+
+### SUPPLEMENT: Temp difference mostly affects x-axis
+ggplot(pairs_data, aes(x = temp_axis_num, y = temp_axis)) +
+  geom_point() +
+  facet_wrap(~Class) +
+  labs(x = "Temperature difference \n T1 - T2", y = "Temperature axis \n (T1-T2)/(T1*T2)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
