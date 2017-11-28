@@ -5,6 +5,54 @@ library(grid)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
+### Dataset references
+forster_list = c("Abdullahi & Parry (1985) ", " Abdullahi & Parry (1985  )", 
+                 "Leandro Tiselius P & Queiroga H(2006) ", "Hansen et al.(2009) ", 
+                 "Booth & Kiddell(2007) ", "Lamb & MacKay(1987)", " MacKay & Lamb(1988)  ", 
+                 " Jalali Tirry & De Clercq(2009_  ", " Van Den Heuvel(1963) ", 
+                 " Parker(1982)  ", " Bryant   Thomas & Bale (1997  )", 
+                 " Bryant Thomas & Bale (1997  )", " Bryant Thomas & Bale(1997)  ", 
+                 " Carroll & Hoyt(1986)  ", " Forster et al (2011)", " Fischer et al. (2003)  ", 
+                 " Fischer Brakefield & Zwaan( 2003)  ", " Fischer et al. 2004  ", 
+                 " Campbell et al. 2001  ", " Uye (1988  )", " Stillwell et al. (2007  )", 
+                 " Sulkin & McKeen (1994) ", " Frouz Ali &  Lobinske (2002  )", 
+                 " Konstantinov (1958  )", " Strixino & Strixino (1985  )", 
+                 " Reigada & Godoy 2006  ", " Sweeney & Vannote 1984 ", " Pechenik 1984  ", 
+                 " Pechenik & Lima (1984  )", " Mullens & Rutz (1983  )", 
+                 " Akey Potter &Jones (1978  )", " Tsitsipis (1980)  ", 
+                 " Dufresne & Hebert 1998  ", " Brambilla 1982  ", " Walls & Ventelä (1998) ", 
+                 " Alvarez & Nicieza(2002)  ", " de Jong(2010) ", " David et al.( 1997)  ", 
+                 " David et al.(1997  )", " David et al(1997)  ", " Ray (1960  )", 
+                 " Ray 1960  ", " Ray(1960)  ", " Crill Huey & Gilchrist 1996 ", 
+                 "Karan etal (1998)", " Karan et al. (1998)  ", " Petavy et al. (2001)  ", 
+                 " Petavy et al.(2001  )", " Tantawy & Mallah (1961 )", " Neel (1940  )", 
+                 " David et al. (1994  )", " David Legout& Moreteau (2006  )", 
+                 " David & Clavel (1967  )", " Druger (1962 )", " Villarreal & Hernandez-Llamas (2005  )", 
+                 " Stam van de Leemkule & Ernsting(1996 )", " Larsen Madden & Nault (1990  )", 
+                 " Tsukada Asai & Higuchi(2005  )", " Kunisch & Anger (1984  )", " Anger (1984  )", 
+                 " Bryant   Thomas & Bale (1997  )", " Bryant Thomas & Bale (1997  )", 
+                 " Bryant Thomas & Bale(1997)  ", " De Block & Stoks (2003  )", 
+                 " Fischer & Fiedler (2002  )", " Karl Janowitz& Fischer (2008  )", 
+                 " Tependino & Parker (1986  )", " Radmacher &Strohm (2009 )", 
+                 " Ouellet & Chabot (2005 )", " Uye (1991  )", " Shuster & Guthrie (1999  )", 
+                 " Seikai (1986  )", " Soderstrom (1988  )", " Seko et al. 2005  ", 
+                 " Lebedeva & Gerasimova (1985  )", " Rahman (1969 )", " Jones Hart & Bull (1982)  ", 
+                 " Miller 1977  ", " Harkey & Semlitsch (1988  )", " Lee et al. (2003  )", 
+                 " Li et al. (2009 )", " Allsopp (1981 )", " Orizaola & Laurila( 2009  )", 
+                 " Smith-Gill & Berven (1979  )", " Berven & Gill(1983  )", 
+                 " Laugen et al. (2005  )", " Blanckenhorn(2000  )", " Lonsdale & Levinton (1985  )", 
+                 " Perrin (1988  )", " Kimoto Uye &Onbe (1986  )", " Stillwell & Fox (2005  )", 
+                 " Stillwell Moya-Larano& Fox (2008  )", " Stelzer 2002 ", 
+                 " Whitman (1986  )", " Karan Moreteau & David (1999  )")
+
+pairs_data = pairs_data %>% 
+  mutate(forster = ifelse(ref %in% forster_list, "Y", "N"))
+
+addtl_refs = pairs_data %>% 
+  filter(forster == "N") %>% 
+  group_by(ref) %>% 
+  summarize(counts = n())
+
 ### Dataset metrics
 range(pairs_data$initial_temp)
 range(pairs_data$final_temp)
