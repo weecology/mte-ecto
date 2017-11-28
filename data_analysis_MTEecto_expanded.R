@@ -5,6 +5,17 @@ library(grid)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
+### Dataset metrics
+range(pairs_data$initial_temp)
+range(pairs_data$final_temp)
+nrow(pairs_data)
+length(unique(pairs_data$species))
+length(unique(pairs_data$study))
+length(unique(pairs_data$Class))
+range(pairs_data$initial_mass_mg)
+min(pairs_data$initial_mass_mg) * 1000 #ug
+max(pairs_data$initial_mass_mg) / 1000 #g
+
 ### All plot calculations
 pairs_data$needed_mass_change = (pairs_data$constantmetrate_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
 pairs_data$actual_mass_change = (pairs_data$final_mass - pairs_data$initial_mass) / abs(pairs_data$initial_mass) * 100
