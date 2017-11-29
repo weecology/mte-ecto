@@ -221,7 +221,7 @@ plot_temp_axis = ggplot(pairs_data, aes(x = temp_axis_num, y = temp_axis)) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 
-ggsave("figures/supp2.jpg", plot = plot_temp_axis, width = 7, height = 5)
+ggsave("figures/supp8.jpg", plot = plot_temp_axis, width = 7, height = 5)
 
 ### SUPPLEMENT: With data trend line
 plot_class_trend = ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
@@ -235,7 +235,7 @@ plot_class_trend = ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 
-ggsave("figures/supp4.jpg", plot = plot_class_trend, width = 7, height = 5)
+ggsave("figures/supp6.jpg", plot = plot_class_trend, width = 7, height = 5)
 
 ### Full model
 #pairs_data$residual_alt = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
@@ -279,7 +279,7 @@ diag_normal2 = ggplot(diag_df, aes(sample = Residuals)) +
   stat_qq()
 
 diags = plot_grid(diag_linear_hetero, diag_normal1, diag_normal2, labels = c("A", "B", "C"))
-ggsave("figures/supp_model_diag.jpg", plot = diags, width = 7, height = 5)
+ggsave("figures/supp5.jpg", plot = diags, width = 7, height = 5)
 
 #Likelihood ratio tests
 null_temp_diff = lmer(residual ~ (1|species) + (1|Class) + 
@@ -331,5 +331,36 @@ residuals_temp = ggplot(pairs_data, aes(x = initial_temp_K, y = residual)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-residuals = plot_grid(residuals_mass, residuals_temp)
-ggsave("figures/supp_residuals.jpg", plot = residuals, width = 15, height = 9)
+residuals = plot_grid(residuals_mass, residuals_temp, labels = c("A", "B"), ncol = 1)
+ggsave("figures/supp4.jpg", plot = residuals, width = 8, height = 10)
+
+### SUPPLEMENT: temperature-dependent exponent for fishes
+fishes_data = filter(pairs_data, Class == "Actinoperygii")
+
+fishes_data$initial_exponent = 0.0417 * (1/(.0000862*(fishes_data$initial_temp + 273.15))) - 0.8923
+fishes_data$final_exponent = 0.0417 * (1/(.0000862*(fishes_data$final_temp + 273.15))) - 0.8923
+
+fishes_data$initial_metrate_adjusted = (fishes_data$initial_mass ^ fishes_data$initial_exponent) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$initial_temp + 273.15)))))
+fishes_data$final_metrate_adjusted = (fishes_data$initial_mass ^ fishes_data$final_exponent) * (exp(((fishes_data$Ea) / (.00008617 * (fishes_data$final_temp + 273.15)))))
+fishes_data$metab_axis_adjusted = fishes_data$final_metrate_adjusted - fishes_data$initial_metrate_adjusted
+
+fishes_data$mass_intercept_1 = fishes_data$exponent * log(2)
+fishes_data$mass_intercept_2 = fishes_data$exponent * log(1.5)
+fishes_data$mass_intercept_3 = fishes_data$exponent * log(0.75)
+fishes_data$mass_intercept_4 = fishes_data$exponent * log(0.5)
+
+ggplot(fishes_data, aes(x = temp_axis, y = metab_axis)) +
+  geom_point() +
+  geom_point(aes(x = temp_axis, y = metab_axis_adjusted), color = "red", alpha = 0.7) +
+  geom_abline(intercept = 0, lty = 3) +
+  coord_cartesian(xlim = c(0, 0.0003), ylim = c(-1, 2)) +
+  geom_abline(data = fishes_data, aes(slope = mass_constant_slope, intercept = mass_constant_intercept)) +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_1), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_2), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_3), color = "grey") +
+  geom_abline(aes(slope = mass_constant_slope, intercept = mass_intercept_4), color = "grey") +
+  labs(x = "Temperature axis \n -(T1-T2)/(T1*T2)", y = "Metabolic rate difference \n log(R2) - log(R1)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+ggsave("figures/supp2.jpg")
