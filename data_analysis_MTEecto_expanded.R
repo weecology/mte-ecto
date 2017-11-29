@@ -2,6 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(lme4)
 library(grid)
+library(cowplot)
 
 pairs_data = read.csv("clean_data_MTEecto_expanded.csv", stringsAsFactors = FALSE)
 
@@ -264,12 +265,21 @@ final_model = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) +
 summary(final_model)
 
 ### SUPPLEMENT: Linear mixed model diagnostics
-coef(final_model)
-plot(fitted(final_model), residuals(final_model)) #linearity good, heteroscedasticity
-abline(h = 0)
-hist(residuals(final_model)) # normality looks good in histogram
-qqnorm(residuals(final_model))
-qqline(residuals(final_model)) #normality of residuals heavy-tailed in qqplot
+diag_df = data.frame(Residuals = residuals(final_model), Fitted = fitted(final_model))
+
+diag_linear_hetero = ggplot(diag_df, aes(x = Fitted, y = Residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
+
+diag_normal1 = ggplot(diag_df, aes(x = Residuals)) +
+  geom_histogram(bins = 50) +
+  xlim(-.5, .5)
+
+diag_normal2 = ggplot(diag_df, aes(sample = Residuals)) +
+  stat_qq()
+
+diags = plot_grid(diag_linear_hetero, diag_normal1, diag_normal2, labels = c("A", "B", "C"))
+ggsave("figures/supp_model_diag.jpg", plot = diags, width = 7, height = 5)
 
 #Likelihood ratio tests
 null_temp_diff = lmer(residual ~ (1|species) + (1|Class) + 
@@ -303,7 +313,7 @@ model_study = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) +
 anova(null_study, model_study)
 
 ### SUPPLEMENT: No systematic variation due to absolute mass or temp
-ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
+residuals_mass = ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   facet_wrap(~Class, scales = "free_x") +
@@ -312,7 +322,7 @@ ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggplot(pairs_data, aes(x = initial_temp_K, y = residual)) +
+residuals_temp = ggplot(pairs_data, aes(x = initial_temp_K, y = residual)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   facet_wrap(~Class, scales = "free_x") +
@@ -320,3 +330,6 @@ ggplot(pairs_data, aes(x = initial_temp_K, y = residual)) +
   labs(x = "Initial temperature (K)", y = "Mass residual") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+residuals = plot_grid(residuals_mass, residuals_temp)
+ggsave("figures/supp_residuals.jpg", plot = residuals, width = 15, height = 9)
