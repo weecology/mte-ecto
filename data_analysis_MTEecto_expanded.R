@@ -238,8 +238,7 @@ plot_class_trend = ggplot(pairs_data, aes(x = temp_axis, y = metab_axis)) +
 ggsave("figures/supp6.jpg", plot = plot_class_trend, width = 7, height = 5)
 
 ### Full model
-#pairs_data$residual_alt = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
-pairs_data$residual = pairs_data$exponent * (log(pairs_data$final_mass) - log(pairs_data$initial_mass))
+pairs_data$residual = pairs_data$metab_axis - (pairs_data$mass_constant_slope * pairs_data$temp_axis)
 
 pairs_data$temp_axis_rescale = pairs_data$temp_axis * 100000
 full_model = lmer(residual ~ log(initial_mass) + initial_temp + temp_axis_rescale + (1|species) + 
@@ -364,3 +363,4 @@ ggplot(fishes_data, aes(x = temp_axis, y = metab_axis)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 ggsave("figures/supp2.jpg")
+
