@@ -263,6 +263,11 @@ final_model = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) +
                      (1|studyID) + (1|study), data = pairs_data)
 summary(final_model)
 
+random_effects = as.data.frame(VarCorr(final_model))
+random_effects_vars = random_effects$vcov
+residuals_var = var(pairs_data$residual)
+random_effects_vars / residuals_var * 100
+
 ### SUPPLEMENT: Linear mixed model diagnostics
 diag_df = data.frame(Residuals = residuals(final_model), Fitted = fitted(final_model))
 
