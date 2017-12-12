@@ -146,7 +146,8 @@ plot_metrates = ggplot(pairs_data, aes(x = expect_metrate_change, y = observ_met
   guides(color = guide_legend(override.aes = list(linetype = c("blank", "blank", "solid"), 
                                                   shape = c(16, 16, NA)))) +
   labs(x = "Metabolic rate change with constant size", y = "Metabolic rate change with varying size", color = "") +
-  scale_x_continuous(limits = c(0, max(pairs_data$expect_metrate_change)), expand = c(0, 0)) +
+  xlim(min(pairs_data$observ_metrate_change), max(pairs_data$expect_metrate_change)) +
+  ylim(min(pairs_data$observ_metrate_change), max(pairs_data$expect_metrate_change)) +
   theme_bw() +
   theme(legend.position = "top",
         panel.grid.major = element_blank(), 
