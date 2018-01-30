@@ -54,6 +54,8 @@ addtl_refs = pairs_data %>%
   group_by(ref) %>% 
   summarize(counts = n())
 
+pairs_data$Class[pairs_data$Class == "Actinoperygii"] = "Actinopterygii"
+
 ### Dataset metrics
 range(pairs_data$initial_temp)
 range(pairs_data$final_temp)
@@ -340,7 +342,7 @@ residuals = plot_grid(residuals_mass, residuals_temp, labels = c("A", "B"), ncol
 ggsave("figures/supp4.jpg", plot = residuals, width = 8, height = 10)
 
 ### SUPPLEMENT: temperature-dependent exponent for fishes
-fishes_data = filter(pairs_data, Class == "Actinoperygii")
+fishes_data = filter(pairs_data, Class == "Actinopterygii")
 
 fishes_data$initial_exponent = 0.0417 * (1/(.0000862*(fishes_data$initial_temp + 273.15))) - 0.8923
 fishes_data$final_exponent = 0.0417 * (1/(.0000862*(fishes_data$final_temp + 273.15))) - 0.8923
