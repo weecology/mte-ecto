@@ -253,23 +253,23 @@ null_mass = lmer(residual ~ initial_temp + temp_axis_rescale + (1|species) +
                    (1|Class) + (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
 model_mass = lmer(residual ~ log(initial_mass) + initial_temp + temp_axis_rescale + (1|species) + 
                     (1|Class) + (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_mass, model_mass)
+anova(null_mass, model_mass) #fixed, REML = FALSE
 
 null_temp_init = lmer(residual ~ log(initial_mass) + temp_axis_rescale + (1|species) + 
                         (1|Class) + (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
 model_temp_init = lmer(residual ~ log(initial_mass) + initial_temp + temp_axis_rescale + (1|species) + 
                          (1|Class) + (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_temp_init, model_temp_init)
+anova(null_temp_init, model_temp_init) #fixed, REML = FALSE
 
 ### STATS: Linear mixed model
-final_model = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                     (1|studyID) + (1|study), data = pairs_data)
-summary(final_model)
+final_model_nested = lmer(residual ~ temp_axis_rescale + (1|Class/species) +
+                            (1|study/studyID), data = pairs_data) #final, REML = TRUE
+summary(final_model_nested)
 
-random_effects = as.data.frame(VarCorr(final_model))
-random_effects_vars = random_effects$vcov
-residuals_var = var(pairs_data$residual)
-random_effects_vars / residuals_var * 100
+random_effects_nested = as.data.frame(VarCorr(final_model_nested))
+random_effects_vars_nested = random_effects_nested$vcov
+residuals_var_nested = var(pairs_data$residual)
+random_effects_vars_nested / residuals_var_nested * 100
 
 ### SUPPLEMENT: Linear mixed model diagnostics
 diag_df = data.frame(Residuals = residuals(final_model), Fitted = fitted(final_model))
@@ -293,31 +293,31 @@ null_temp_diff = lmer(residual ~ (1|species) + (1|Class) +
                         (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
 model_temp_diff = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
                          (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_temp_diff, model_temp_diff)
+anova(null_temp_diff, model_temp_diff) #fixed, REML = FALSE
 
 null_sp = lmer(residual ~ temp_axis_rescale + (1|Class) + 
-                 (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
+                 (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
 model_sp = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                  (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_sp, model_sp)
+                  (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
+anova(null_sp, model_sp, refit = FALSE) #random, REML = TRUE
 
 null_class = lmer(residual ~ temp_axis_rescale + (1|species) +  
-                    (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
+                    (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
 model_class = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                     (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_class, model_class)
+                     (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
+anova(null_class, model_class, refit = FALSE) #random, REML = TRUE
 
 null_studyID = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                      (1|study), data = pairs_data, REML = FALSE)
+                      (1|study), data = pairs_data, REML = TRUE)
 model_studyID = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                       (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_studyID, model_studyID)
+                       (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
+anova(null_studyID, model_studyID, refit = FALSE) #random, REML = TRUE
 
 null_study = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                    (1|studyID), data = pairs_data, REML = FALSE)
+                    (1|studyID), data = pairs_data, REML = TRUE)
 model_study = lmer(residual ~ temp_axis_rescale + (1|species) + (1|Class) + 
-                     (1|studyID) + (1|study), data = pairs_data, REML = FALSE)
-anova(null_study, model_study)
+                     (1|studyID) + (1|study), data = pairs_data, REML = TRUE)
+anova(null_study, model_study, refit = FALSE) #random, REML = TRUE
 
 ### SUPPLEMENT: No systematic variation due to absolute mass or temp
 residuals_mass = ggplot(pairs_data, aes(x = log(initial_mass), y = residual)) +
