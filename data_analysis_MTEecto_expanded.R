@@ -141,7 +141,7 @@ pairs_data = pairs_data %>%
   mutate(point_color = ifelse(Class == "Amphibia", "Amphibians", "Non-amphibians"))
 
 plot_metrates = ggplot(pairs_data, aes(x = expect_metrate_change, y = observ_metrate_change)) +
-  geom_point(aes(color = point_color)) +
+  geom_point(aes(color = point_color), size = 1) +
   scale_color_manual(values = c("dark orange", "blue",  "black")) +
   geom_abline(aes(color = "Size does not change", intercept = 0, slope = 1)) +
   geom_hline(yintercept = 0, color = "grey") +
@@ -155,7 +155,7 @@ plot_metrates = ggplot(pairs_data, aes(x = expect_metrate_change, y = observ_met
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 
-ggsave("figures/fig3.jpg", plot = plot_metrates)
+ggsave("figures/fig3.jpg", width = 5, height = 5, plot = plot_metrates)
 
 ### STATS: Variance explained by no mass change line
 metrate_df = data.frame(decrease_exceed = length(which(round(pairs_data$observ_metrate_change, 7) < 0)), 
