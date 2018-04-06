@@ -272,7 +272,7 @@ residuals_var_nested = var(pairs_data$residual)
 random_effects_vars_nested / residuals_var_nested * 100
 
 ### SUPPLEMENT: Linear mixed model diagnostics
-diag_df = data.frame(Residuals = residuals(final_model), Fitted = fitted(final_model))
+diag_df = data.frame(Residuals = residuals(final_model_nested), Fitted = fitted(final_model_nested))
 
 diag_linear_hetero = ggplot(diag_df, aes(x = Fitted, y = Residuals)) +
   geom_point() +
